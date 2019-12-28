@@ -1,6 +1,7 @@
 package com.project.hashnote.document;
 
 import lombok.*;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import javax.validation.constraints.Max;
@@ -16,13 +17,14 @@ import java.util.Objects;
 @Builder
 @Document(collection = "notes")
 public class Note {
+    @Id
     private String id;
     @Max(20)
     private String name;
     @NotNull
     @Size(min = 1, max = 3000)
-    private String content;
-    private String key;
+    private byte[] content;
+    private EncodingDetails encodingDetails;
     private String author;
 
     @Override
