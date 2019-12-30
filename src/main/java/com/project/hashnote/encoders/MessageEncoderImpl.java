@@ -67,6 +67,8 @@ public class MessageEncoderImpl implements MessageEncoder {
         return initVector.getIV();
     }
 
+    public String getMethod() { return secretKey.getAlgorithm(); }
+
     public static EncoderBuilder builder(){
         return new EncoderBuilder();
     }
@@ -103,13 +105,17 @@ public class MessageEncoderImpl implements MessageEncoder {
         }
 
         public EncoderBuilder secretKey(byte[] customKey) {
-            if(!Base64.isBase64(customKey))
-                throw new MalformedPrivateKeyException("Provided key is malformed.");
+            verifyKey(customKey);
             byte[] key = Base64.decodeBase64(customKey);
 
             secretKey = new SecretKeySpec(key, 0, key.length, algorithm.getMethod());
 
             return this;
+        }
+
+        private void verifyKey(byte[] customKey) {
+            if(!Base64.isBase64(customKey))
+                throw new MalformedPrivateKeyException("Provided key is malformed.");
         }
 
         public EncoderBuilder initVector(){
@@ -122,13 +128,17 @@ public class MessageEncoderImpl implements MessageEncoder {
         }
 
         public EncoderBuilder initVector(byte[] customVector){
-            if(customVector.length != algorithm.getVectorSize())
-                throw new IllegalArgumentException("Vector needs to be "
-                        + algorithm.getVectorSize() + " bytes long, is: " + customVector.length);
+            verifyVector(customVector);
 
             initVector = new IvParameterSpec(customVector);
 
             return this;
+        }
+
+        private void verifyVector(byte[] customVector) {
+            if(customVector.length != algorithm.getVectorSize())
+                throw new IllegalArgumentException("Vector needs to be "
+                        + algorithm.getVectorSize() + " bytes long, is: " + customVector.length);
         }
 
         private void cipher() {
@@ -139,9 +149,11 @@ public class MessageEncoderImpl implements MessageEncoder {
             try {
                 String transformation = algorithm.getMethod()
                         + "/" + algorithm.getMode() + "/" + algorithm.getPadding();
+
                 cipher = Cipher.getInstance(transformation);
             } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
-                throw new IncorrectAlgorithmPropertiesException("Incorrect algorithm.", e);
+                throw new IncorrectAlgorithmPropertiesException
+                        ("Provided algorithm's properties don't match up with expected values", e);
             }
         }
 

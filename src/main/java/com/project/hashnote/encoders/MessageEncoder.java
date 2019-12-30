@@ -11,4 +11,5 @@ public interface MessageEncoder {
     byte[] decode(byte[] message) throws IncorrectPrivateKeyException;
     byte[] getPrivateKey();
     byte[] getInitVector();
+    String getMethod();
 }

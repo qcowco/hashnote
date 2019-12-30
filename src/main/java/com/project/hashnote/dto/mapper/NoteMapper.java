@@ -3,20 +3,26 @@ package com.project.hashnote.dto.mapper;
 import com.project.hashnote.document.EncodingDetails;
 import com.project.hashnote.document.Note;
 import com.project.hashnote.dto.NoteDto;
-import org.mapstruct.IterableMapping;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.Named;
+import com.project.hashnote.dto.NoteRequest;
+import org.mapstruct.*;
 
 import java.util.List;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.SET_TO_NULL)
 public interface NoteMapper {
     @Named("fromDto")
-    @Mapping(source = "dto.content", target = "content", qualifiedByName = "toBytes")
-    @Mapping(source = "encodingDetails", target = "encodingDetails")
+    @Mapping(source = "noteDto.id", target = "id")
+    @Mapping(source = "noteDto.name", target = "name")
+    @Mapping(source = "noteDto.content", target = "content", qualifiedByName = "toBytes")
+    @Mapping(source = "encodingDetails.vector", target = "encodingDetails.vector")
+    @Mapping(source = "encodingDetails.method", target = "encodingDetails.method")
     @Mapping(ignore = true, target = "author")
-    Note noteDtoToNote(NoteDto dto, EncodingDetails encodingDetails);
+    Note requestToNote(NoteRequest noteRequest);
+
+    @Mapping(source = "noteDto.id", target = "id")
+    @Mapping(source = "noteDto.name", target = "name")
+    @Mapping(source = "noteDto.content", target = "content", qualifiedByName = "toBytes")
+    Note noteDtoToNote(NoteDto noteDto);
 
     @Named("toBytes")
     default byte[] contentFromBase(String content){
@@ -34,4 +40,6 @@ public interface NoteMapper {
 
     @IterableMapping(qualifiedByName = "toDto")
     List<NoteDto> noteToNoteDtoList(List<Note> notes);
+
+    void noteToNote(Note source, @MappingTarget Note target);
 }

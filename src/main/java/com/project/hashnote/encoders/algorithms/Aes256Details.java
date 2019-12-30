@@ -1,5 +1,8 @@
 package com.project.hashnote.encoders.algorithms;
 
+import org.springframework.stereotype.Component;
+
+@Component
 public class Aes256Details implements AlgorithmDetails {
     private String method = "AES";
     private String mode = "CBC";
@@ -32,3 +35,4 @@ public class Aes256Details implements AlgorithmDetails {
         return vectorSize;
     }
 }
+// TODO: 28.12.2019 add - triple DES, Blowfish, Twofish[, RSA?]
