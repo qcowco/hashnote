@@ -1,14 +1,14 @@
 package com.project.hashnote.web;
 
-import com.project.hashnote.dto.NoteDto;
-import com.project.hashnote.dto.NoteRequest;
-import com.project.hashnote.service.NoteService;
+import com.project.hashnote.note.dto.EncodingDetails;
+import com.project.hashnote.note.dto.NoteDto;
+import com.project.hashnote.note.dto.NoteRequest;
+import com.project.hashnote.note.service.NoteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 @RestController
@@ -16,7 +16,6 @@ import java.util.List;
 public class NoteController {
     NoteService noteService;
 
-    // TODO: 29.12.2019 kody 4xx dla InorrectPrivateKey, MalformedPrivateKey, InvalidAlgorithmName
     @Autowired
     public NoteController(NoteService noteService) {
         this.noteService = noteService;
@@ -37,19 +36,19 @@ public class NoteController {
         return noteService.getDecrypted(id, secretKey);
     }
 
-    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE) // TODO: 28.12.2019 validation
     @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE) // TODO: 28.12.2019 validation
     public String save(@RequestBody NoteRequest noteRequest) {
         return noteService.save(noteRequest);
     }
 
     @PatchMapping("/{id}/{secretKey}")
-    public void patch(@RequestBody NoteRequest noteRequest, @PathVariable String id, @PathVariable String secretKey){ // TODO: 30.12.2019 validation
-        noteRequest.getNoteDto().setId(id);
-        noteService.patch(noteRequest, secretKey);
+    public String patch(@RequestBody EncodingDetails encodingDetails, @PathVariable String id, @PathVariable String secretKey){ // TODO: 30.12.2019 validation
+        return noteService.patch(encodingDetails, id, secretKey);
     }
 
-    @DeleteMapping("/{id}") // TODO: 30.12.2019 response code
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @DeleteMapping("/{id}")
     public void delete(@PathVariable String id){
         noteService.delete(id);
     }

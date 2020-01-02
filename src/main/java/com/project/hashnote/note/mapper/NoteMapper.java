@@ -1,9 +1,8 @@
 package com.project.hashnote.dto.mapper;
 
-import com.project.hashnote.document.EncodingDetails;
 import com.project.hashnote.document.Note;
 import com.project.hashnote.dto.NoteDto;
-import com.project.hashnote.dto.NoteRequest;
+import com.project.hashnote.note.dto.NoteRequest;
 import org.mapstruct.*;
 
 import java.util.List;
@@ -22,6 +21,8 @@ public interface NoteMapper {
     @Mapping(source = "noteDto.id", target = "id")
     @Mapping(source = "noteDto.name", target = "name")
     @Mapping(source = "noteDto.content", target = "content", qualifiedByName = "toBytes")
+    @Mapping(ignore = true, target = "author")
+    @Mapping(ignore = true, target = "encodingDetails")
     Note noteDtoToNote(NoteDto noteDto);
 
     @Named("toBytes")

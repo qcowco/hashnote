@@ -1,4 +1,4 @@
-package com.project.hashnote.dto;
+package com.project.hashnote.note.document;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -10,7 +10,6 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class EncodingDetails {
-    private String key;
     private String vector;
     private String method;
 }

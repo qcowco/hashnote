@@ -1,14 +1,15 @@
 package com.project.hashnote.service;
 
 import com.project.hashnote.document.Note;
-import com.project.hashnote.dto.EncodingDetails;
-import com.project.hashnote.dto.NoteDto;
-import com.project.hashnote.dto.NoteRequest;
+import com.project.hashnote.note.dto.EncodingDetails;
+import com.project.hashnote.note.dto.NoteDto;
+import com.project.hashnote.note.dto.NoteRequest;
 import com.project.hashnote.encoders.MessageEncoder;
 import com.project.hashnote.encoders.MessageEncoderImpl;
-import com.project.hashnote.encoders.algorithms.Aes256Details;
 import com.project.hashnote.encoders.algorithms.AlgorithmDetails;
 import com.project.hashnote.encoders.exceptions.InvalidAlgorithmNameException;
+import com.project.hashnote.encoders.exceptions.MalformedPrivateKeyException;
+import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -47,7 +48,7 @@ public class NoteEncoder {
                 .algorithmDetails(algorithmDetails);
 
         if (encodingDetails.getKey() != null)
-            builder = builder.secretKey(decodeBase64(encodingDetails.getKey()));
+            builder = builder.secretKey(decodeBase64(decodeBase64(encodingDetails.getKey())));
 
         if (encodingDetails.getVector() != null)
             builder = builder.initVector(decodeBase64(encodingDetails.getVector()));
@@ -60,7 +61,7 @@ public class NoteEncoder {
                 .filter(alg -> alg.getMethod().equals(method))
                 .findFirst()
                 .orElseThrow(
-                        () -> new InvalidAlgorithmNameException("No algorithm found with name:" + method)
+                        () -> new InvalidAlgorithmNameException("No algorithm found with name: " + method)
                 );
     }
 
@@ -91,7 +92,7 @@ public class NoteEncoder {
     private String[] getEncodedDetailsFor(MessageEncoder messageEncoder) {
         String[] encodedDetails = new String[2];
 
-        encodedDetails[0] = encodeBase64String(messageEncoder.getPrivateKey());
+        encodedDetails[0] = encodeBase64String(encodeBase64(messageEncoder.getPrivateKey()));
         encodedDetails[1] = encodeBase64String(messageEncoder.getInitVector());
 
         return encodedDetails;
@@ -99,6 +100,8 @@ public class NoteEncoder {
 
 
     public byte[] decrypt(Note note, String secretKey) {
+        verifyKey(secretKey.getBytes());
+
         EncodingDetails encodingDetails = new EncodingDetails(secretKey,
                 note.getEncodingDetails().getVector(), note.getEncodingDetails().getMethod());
 
@@ -109,4 +112,8 @@ public class NoteEncoder {
         return messageDecoder.decode(content);
     }
 
+    private void verifyKey(byte[] customKey) {
+        if(!Base64.isBase64(customKey))
+            throw new MalformedPrivateKeyException("Provided key is malformed.");
+    }
 }

@@ -1,12 +1,9 @@
 package com.project.hashnote.encoders;
 
 import com.project.hashnote.encoders.algorithms.AlgorithmDetails;
-import com.project.hashnote.encoders.exceptions.IncorrectAlgorithmPropertiesException;
-import com.project.hashnote.encoders.exceptions.IncorrectPrivateKeyException;
-import com.project.hashnote.encoders.exceptions.MalformedPrivateKeyException;
+import com.project.hashnote.encoders.exceptions.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import org.apache.tomcat.util.codec.binary.Base64;
 
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
@@ -15,52 +12,57 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.util.Random;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class MessageEncoderImpl implements MessageEncoder {
+public class MessageEncrypterImpl implements MessageEncrypter {
     private Cipher cipher;
     private SecretKey secretKey;
     private IvParameterSpec initVector;
 
     public  byte[] encode(byte[] message) {
+        trySetCipherMode(Cipher.ENCRYPT_MODE);
         return tryEncode(message);
     }
 
     private byte[] tryEncode(byte[] plainMessage) {
         try {
-            return executeAlgorithm(Cipher.ENCRYPT_MODE, plainMessage);
-        } catch (InvalidKeyException | InvalidAlgorithmParameterException
-                | IllegalBlockSizeException | BadPaddingException e) {
+            return executeAlgorithmFor(plainMessage);
+        } catch (IllegalBlockSizeException | BadPaddingException e) {
             throw new IllegalStateException("Internal error.", e);
         }
     }
 
-    public byte[] decode(byte[] encodedMessage) throws IncorrectPrivateKeyException {
+    public byte[] decode(byte[] encodedMessage) {
+        trySetCipherMode(Cipher.DECRYPT_MODE);
         return tryDecode(encodedMessage);
     }
 
-    private byte[] tryDecode(byte[] encodedMessage) throws IncorrectPrivateKeyException {
+    private byte[] tryDecode(byte[] encodedMessage) {
         try {
-            return executeAlgorithm(Cipher.DECRYPT_MODE, encodedMessage);
+            return executeAlgorithmFor(encodedMessage);
         } catch (BadPaddingException | IllegalBlockSizeException e) {
             throw new IncorrectPrivateKeyException("The provided key was incorrect", e);
+        }
+    }
+
+    private void trySetCipherMode(int operationMode){
+        try {
+            setCipherMode(operationMode);
         } catch (InvalidAlgorithmParameterException | InvalidKeyException e) {
             throw new IllegalStateException("Internal error.", e);
         }
     }
 
-    private byte[] executeAlgorithm(int operationMode, byte[] message) throws InvalidKeyException,
-            InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException{
+    private void setCipherMode(int operationMode) throws InvalidAlgorithmParameterException, InvalidKeyException {
         cipher.init(operationMode, secretKey, initVector);
-
-        byte[] result = cipher.doFinal(message);
-
-        return result;
     }
 
-    public byte[] getPrivateKey(){
-        return Base64.encodeBase64(secretKey.getEncoded());
+    private byte[] executeAlgorithmFor(byte[] message) throws IllegalBlockSizeException, BadPaddingException{
+        return cipher.doFinal(message);
+    }
+
+    public byte[] getSecretKey(){
+        return secretKey.getEncoded();
     }
 
     public byte[] getInitVector(){
@@ -81,8 +83,8 @@ public class MessageEncoderImpl implements MessageEncoder {
 
         public EncoderBuilder(){}
 
-        public EncoderBuilder algorithmDetails(AlgorithmDetails details){
-            this.algorithm = details;
+        public EncoderBuilder algorithmDetails(AlgorithmDetails algorithm){
+            this.algorithm = algorithm;
             return this;
         }
 
@@ -105,22 +107,23 @@ public class MessageEncoderImpl implements MessageEncoder {
         }
 
         public EncoderBuilder secretKey(byte[] customKey) {
-            verifyKey(customKey);
-            byte[] key = Base64.decodeBase64(customKey);
+            secretKey = new SecretKeySpec(customKey, 0, customKey.length, algorithm.getMethod());
 
-            secretKey = new SecretKeySpec(key, 0, key.length, algorithm.getMethod());
+            verifyKey(secretKey.getEncoded());
 
             return this;
         }
 
         private void verifyKey(byte[] customKey) {
-            if(!Base64.isBase64(customKey))
-                throw new MalformedPrivateKeyException("Provided key is malformed.");
+            if(customKey.length != algorithm.getKeyByteSize())
+                throw new MalformedPrivateKeyException("Key needs to be "
+                        + algorithm.getKeyByteSize() + " bytes long, is: " + customKey.length);
         }
 
+
         public EncoderBuilder initVector(){
-            byte[] randomBytes = new byte[algorithm.getVectorSize()];
-            new Random().nextBytes(randomBytes);
+            byte[] randomBytes = new byte[algorithm.getVectorByteSize()];
+            new SecureRandom().nextBytes(randomBytes);
 
             initVector = new IvParameterSpec(randomBytes);
 
@@ -136,9 +139,9 @@ public class MessageEncoderImpl implements MessageEncoder {
         }
 
         private void verifyVector(byte[] customVector) {
-            if(customVector.length != algorithm.getVectorSize())
-                throw new IllegalArgumentException("Vector needs to be "
-                        + algorithm.getVectorSize() + " bytes long, is: " + customVector.length);
+            if(customVector.length != algorithm.getVectorByteSize())
+                throw new MalformedVectorException("Vector needs to be "
+                        + algorithm.getVectorByteSize() + " bytes long, is: " + customVector.length);
         }
 
         private void cipher() {
@@ -157,7 +160,7 @@ public class MessageEncoderImpl implements MessageEncoder {
             }
         }
 
-        public MessageEncoderImpl build() {
+        public MessageEncrypterImpl build() {
             if (secretKey == null)
                 secretKey();
 
@@ -166,7 +169,7 @@ public class MessageEncoderImpl implements MessageEncoder {
 
             cipher();
 
-            return new MessageEncoderImpl(cipher, secretKey, initVector);
+            return new MessageEncrypterImpl(cipher, secretKey, initVector);
         }
     }
 }

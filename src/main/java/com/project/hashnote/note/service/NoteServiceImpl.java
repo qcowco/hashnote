@@ -2,10 +2,11 @@ package com.project.hashnote.service;
 
 import com.project.hashnote.dao.NoteRepository;
 import com.project.hashnote.document.Note;
-import com.project.hashnote.dto.EncodingDetails;
-import com.project.hashnote.dto.NoteDto;
-import com.project.hashnote.dto.NoteRequest;
-import com.project.hashnote.dto.mapper.NoteMapper;
+import com.project.hashnote.note.dto.EncodingDetails;
+import com.project.hashnote.note.dto.NoteDto;
+import com.project.hashnote.note.dto.NoteRequest;
+import com.project.hashnote.note.mapper.NoteMapper;
+import com.project.hashnote.exceptions.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -28,6 +29,8 @@ public class NoteServiceImpl implements NoteService {
 
     @Override
     public String save(NoteRequest noteRequest) {
+        noteRequest.getNoteDto().setId(null);
+
         NoteRequest encodedRequest = noteEncoder.encodeRequest(noteRequest);
 
         Note note = noteMapper.requestToNote(encodedRequest);
@@ -68,30 +71,29 @@ public class NoteServiceImpl implements NoteService {
         Optional<Note> optionalNote = noteRepository.findById(id);
 
         return optionalNote.orElseThrow(
-                () -> new IllegalArgumentException("No note found with id: " + id)
+                () -> new ResourceNotFoundException("No note found with id: " + id)
         );
     }
 
     @Override
-    public void patch(NoteRequest noteRequest, String key) {
-// TODO: 30.12.2019 add patch service
+    public String patch(EncodingDetails encodingDetails, String id, String secretKey) {
+        NoteDto decryptedDto = getDecrypted(id, secretKey);
+
+        NoteRequest noteRequest = new NoteRequest();
+        noteRequest.setNoteDto(decryptedDto);
+        noteRequest.setEncodingDetails(encodingDetails);
+
+        NoteRequest encodedRequest = noteEncoder.encodeRequest(noteRequest);
+        EncodingDetails encodingResult = encodedRequest.getEncodingDetails();
+
+        Note note = noteMapper.requestToNote(encodedRequest);
+        Note persistedNote = noteRepository.save(note);
+
+        return persistedNote.getId() + "/" + encodingResult.getKey();
     }
 
     @Override
     public void delete(String id) {
         noteRepository.deleteById(id);
     }
-
-    public void patch(NoteRequest noteRequest){
-        Note newNote = noteMapper.requestToNote(noteRequest);
-
-        NoteDto noteDto = noteRequest.getNoteDto();
-        Note originalNote = tryGetNoteById(noteDto.getId());
-
-        noteMapper.noteToNote(newNote, originalNote);
-
-        noteRepository.save(originalNote);
-    }
-
-
 }
