@@ -1,4 +1,4 @@
-package com.project.hashnote.encoders.exceptions;
+package com.project.hashnote.encryption.exceptions;
 
 public class InvalidAlgorithmNameException extends RuntimeException {
     public InvalidAlgorithmNameException(String message) {

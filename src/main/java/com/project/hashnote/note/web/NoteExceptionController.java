@@ -1,8 +1,8 @@
 package com.project.hashnote.note.web;
 
-import com.project.hashnote.encoders.exceptions.IncorrectPrivateKeyException;
-import com.project.hashnote.encoders.exceptions.InvalidAlgorithmNameException;
-import com.project.hashnote.encoders.exceptions.MalformedPrivateKeyException;
+import com.project.hashnote.encryption.exceptions.IncorrectPrivateKeyException;
+import com.project.hashnote.encryption.exceptions.InvalidAlgorithmNameException;
+import com.project.hashnote.encryption.exceptions.MalformedPrivateKeyException;
 import com.project.hashnote.exceptions.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ControllerAdvice;

@@ -1,4 +1,4 @@
-package com.project.hashnote.encoders.algorithms;
+package com.project.hashnote.encryption.algorithms;
 
 import org.springframework.stereotype.Component;
 

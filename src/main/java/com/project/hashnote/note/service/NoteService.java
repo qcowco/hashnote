@@ -8,7 +8,7 @@ import java.util.List;
 public interface NoteService {
     String save(NoteRequest noteRequest);
     List<NoteDto> getAll();
-    NoteDto getEncoded(String id);
+    NoteDto getEncrypted(String id);
     NoteDto getDecrypted(String id, String secretKey);
     String patch(String method, String id, String secretKey);
     void delete(String id);

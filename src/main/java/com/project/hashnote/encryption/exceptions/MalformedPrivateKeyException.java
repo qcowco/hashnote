@@ -1,6 +1,4 @@
-package com.project.hashnote.encoders.exceptions;
-
-import java.io.IOException;
+package com.project.hashnote.encryption.exceptions;
 
 public class MalformedPrivateKeyException extends RuntimeException {
     public MalformedPrivateKeyException(String message) {

@@ -1,9 +1,9 @@
 package com.project.hashnote.note.util;
 
-import com.project.hashnote.encoders.MessageEncrypter;
-import com.project.hashnote.encoders.MessageEncrypterImpl;
-import com.project.hashnote.encoders.algorithms.AlgorithmDetails;
-import com.project.hashnote.encoders.exceptions.InvalidAlgorithmNameException;
+import com.project.hashnote.encryption.MessageEncrypter;
+import com.project.hashnote.encryption.MessageEncrypterImpl;
+import com.project.hashnote.encryption.algorithms.AlgorithmDetails;
+import com.project.hashnote.encryption.exceptions.InvalidAlgorithmNameException;
 import com.project.hashnote.note.dto.NoteRequest;
 import com.project.hashnote.note.dto.EncryptionDetails;
 import com.project.hashnote.note.mapper.EncryptionMapper;
@@ -28,19 +28,19 @@ public class NoteEncrypterImpl implements NoteEncrypter {
 
         EncryptionDetails encryptionDetails = encryptionMapper.getEncryptionDetails(request);
 
-        MessageEncrypter messageEncoder = getEncoderFor(encryptionDetails);
+        MessageEncrypter messageEncoder = getEncrypterFor(encryptionDetails);
 
         byte[] plainMessage = request.getContent().getBytes();
-        byte[] encryptedMessage = messageEncoder.encode(plainMessage);
+        byte[] encryptedMessage = messageEncoder.encrypt(plainMessage);
 
         return new EncryptionDetails(encryptedMessage, messageEncoder.getSecretKey(),
                 messageEncoder.getInitVector(), messageEncoder.getMethod());
     }
 
-    private MessageEncrypter getEncoderFor(EncryptionDetails encryptionDetails){
+    private MessageEncrypter getEncrypterFor(EncryptionDetails encryptionDetails){
         AlgorithmDetails algorithmDetails = tryGetAlgorithm(encryptionDetails.getMethod());
 
-        MessageEncrypterImpl.EncoderBuilder builder = MessageEncrypterImpl.builder()
+        MessageEncrypterImpl.EncrypterBuilder builder = MessageEncrypterImpl.builder()
                 .algorithmDetails(algorithmDetails);
 
         if(encryptionDetails.getSecretKey() != null)
@@ -63,10 +63,10 @@ public class NoteEncrypterImpl implements NoteEncrypter {
 
     @Override
     public byte[] decrypt(EncryptionDetails encryptionDetails) {
-        MessageEncrypter messageEncoder = getEncoderFor(encryptionDetails);
+        MessageEncrypter messageEncoder = getEncrypterFor(encryptionDetails);
 
         byte[] encryptedMessage = encryptionDetails.getMessage();
-        byte[] decryptedMessage = messageEncoder.decode(encryptedMessage);
+        byte[] decryptedMessage = messageEncoder.decrypt(encryptedMessage);
 
         return decryptedMessage;
     }

@@ -73,7 +73,7 @@ public class NoteServiceImpl implements NoteService {
     }
 
     @Override
-    public NoteDto getEncoded(String id) {
+    public NoteDto getEncrypted(String id) {
         Note note = tryGetNoteById(id);
 
         return noteMapper.noteToNoteDto(note);

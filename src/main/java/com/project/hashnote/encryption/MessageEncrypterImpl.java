@@ -1,7 +1,7 @@
-package com.project.hashnote.encoders;
+package com.project.hashnote.encryption;
 
-import com.project.hashnote.encoders.algorithms.AlgorithmDetails;
-import com.project.hashnote.encoders.exceptions.*;
+import com.project.hashnote.encryption.algorithms.AlgorithmDetails;
+import com.project.hashnote.encryption.exceptions.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 
@@ -19,12 +19,12 @@ public class MessageEncrypterImpl implements MessageEncrypter {
     private SecretKey secretKey;
     private IvParameterSpec initVector;
 
-    public  byte[] encode(byte[] message) {
+    public  byte[] encrypt(byte[] message) {
         trySetCipherMode(Cipher.ENCRYPT_MODE);
-        return tryEncode(message);
+        return tryEncrypt(message);
     }
 
-    private byte[] tryEncode(byte[] plainMessage) {
+    private byte[] tryEncrypt(byte[] plainMessage) {
         try {
             return executeAlgorithmFor(plainMessage);
         } catch (IllegalBlockSizeException | BadPaddingException e) {
@@ -32,14 +32,14 @@ public class MessageEncrypterImpl implements MessageEncrypter {
         }
     }
 
-    public byte[] decode(byte[] encodedMessage) {
+    public byte[] decrypt(byte[] encryptedMessage) {
         trySetCipherMode(Cipher.DECRYPT_MODE);
-        return tryDecode(encodedMessage);
+        return tryDecrypt(encryptedMessage);
     }
 
-    private byte[] tryDecode(byte[] encodedMessage) {
+    private byte[] tryDecrypt(byte[] encryptedMessage) {
         try {
-            return executeAlgorithmFor(encodedMessage);
+            return executeAlgorithmFor(encryptedMessage);
         } catch (BadPaddingException | IllegalBlockSizeException e) {
             throw new IncorrectPrivateKeyException("The provided key was incorrect", e);
         }
@@ -71,24 +71,24 @@ public class MessageEncrypterImpl implements MessageEncrypter {
 
     public String getMethod() { return secretKey.getAlgorithm(); }
 
-    public static EncoderBuilder builder(){
-        return new EncoderBuilder();
+    public static EncrypterBuilder builder(){
+        return new EncrypterBuilder();
     }
 
-    public static class EncoderBuilder {
+    public static class EncrypterBuilder {
         private AlgorithmDetails algorithm;
         private Cipher cipher;
         private SecretKey secretKey;
         private IvParameterSpec initVector;
 
-        public EncoderBuilder(){}
+        public EncrypterBuilder(){}
 
-        public EncoderBuilder algorithmDetails(AlgorithmDetails algorithm){
+        public EncrypterBuilder algorithmDetails(AlgorithmDetails algorithm){
             this.algorithm = algorithm;
             return this;
         }
 
-        public EncoderBuilder secretKey() {
+        public EncrypterBuilder secretKey() {
             KeyGenerator keyGenerator = tryGetKeyGeneratorForAlgorithm();
             SecureRandom secureRandom = new SecureRandom();
             keyGenerator.init(algorithm.getKeySize(), secureRandom);
@@ -106,7 +106,7 @@ public class MessageEncrypterImpl implements MessageEncrypter {
             }
         }
 
-        public EncoderBuilder secretKey(byte[] customKey) {
+        public EncrypterBuilder secretKey(byte[] customKey) {
             secretKey = new SecretKeySpec(customKey, 0, customKey.length, algorithm.getMethod());
 
             verifyKey(secretKey.getEncoded());
@@ -121,7 +121,7 @@ public class MessageEncrypterImpl implements MessageEncrypter {
         }
 
 
-        public EncoderBuilder initVector(){
+        public EncrypterBuilder initVector(){
             byte[] randomBytes = new byte[algorithm.getVectorByteSize()];
             new SecureRandom().nextBytes(randomBytes);
 
@@ -130,7 +130,7 @@ public class MessageEncrypterImpl implements MessageEncrypter {
             return this;
         }
 
-        public EncoderBuilder initVector(byte[] customVector){
+        public EncrypterBuilder initVector(byte[] customVector){
             verifyVector(customVector);
 
             initVector = new IvParameterSpec(customVector);

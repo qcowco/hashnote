@@ -1,4 +1,4 @@
-package com.project.hashnote.encoders.exceptions;
+package com.project.hashnote.encryption.exceptions;
 
 public class IncorrectAlgorithmPropertiesException extends RuntimeException {
     public IncorrectAlgorithmPropertiesException(String message, Throwable cause) {

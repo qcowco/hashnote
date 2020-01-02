@@ -15,7 +15,7 @@ package com.project.hashnote.note.service;
 ////        MessageEncoder messageEncoder = getEncoderFor(encryptionDetails);
 ////
 ////        NoteDto plainDto = noteRequest.getNoteDto();
-////        byte[] encryptedMessage = messageEncoder.encode(plainDto.getContent().getBytes());
+////        byte[] encryptedMessage = messageEncoder.encrypt(plainDto.getContent().getBytes());
 ////        NoteDto encodedDto = createEncodedDto(plainDto, encryptedMessage);
 ////
 ////        EncryptionDetails encodedDetails = createEncodedDetails(messageEncoder);
@@ -27,7 +27,7 @@ package com.project.hashnote.note.service;
 ////    private MessageEncrypterImpl getEncoderFor(EncryptionDetails encryptionDetails) {
 ////        AlgorithmDetails algorithmDetails = tryGetAlgorithm(encryptionDetails.getMethod());
 ////
-////        MessageEncrypterImpl.EncoderBuilder builder = MessageEncrypterImpl.builder()
+////        MessageEncrypterImpl.EncrypterBuilder builder = MessageEncrypterImpl.builder()
 ////                .algorithmDetails(algorithmDetails);
 ////
 ////        if (encryptionDetails.getKey() != null)
@@ -92,7 +92,7 @@ package com.project.hashnote.note.service;
 ////
 ////        byte[] content = decodeBase64(note.getContent());
 ////
-////        return messageDecoder.decode(content);
+////        return messageDecoder.decrypt(content);
 ////    }
 //
 //    private void verifyKey(byte[] customKey) {

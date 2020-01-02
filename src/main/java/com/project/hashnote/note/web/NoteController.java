@@ -28,11 +28,11 @@ public class NoteController {
 
     @GetMapping("/{id}")
     public NoteDto getOne(@PathVariable String id){
-        return noteService.getEncoded(id);
+        return noteService.getEncrypted(id);
     }
 
     @GetMapping("/{id}/{secretKey}")
-    public NoteDto getOneDecoded(@PathVariable String id, @PathVariable String secretKey) { // TODO: 30.12.2019 validation keys
+    public NoteDto getOneDecrypted(@PathVariable String id, @PathVariable String secretKey) { // TODO: 30.12.2019 validation keys
         return noteService.getDecrypted(id, secretKey);
     }
 

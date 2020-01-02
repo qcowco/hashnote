@@ -1,7 +1,7 @@
-package com.project.hashnote.encoders;
+package com.project.hashnote.encryption;
 
-import com.project.hashnote.encoders.algorithms.AlgorithmDetails;
-import com.project.hashnote.encoders.exceptions.IncorrectPrivateKeyException;
+import com.project.hashnote.encryption.algorithms.AlgorithmDetails;
+import com.project.hashnote.encryption.exceptions.IncorrectPrivateKeyException;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -30,12 +30,12 @@ public class MessageEncrypterImpl2 implements MessageEncrypter {
         this.algorithms = algorithms;
     }
 
-    public  byte[] encode(byte[] message) {
+    public  byte[] encrypt(byte[] message) {
         trySetCipherMode(Cipher.ENCRYPT_MODE);
-        return tryEncode(message);
+        return tryEncrypt(message);
     }
 
-    private byte[] tryEncode(byte[] plainMessage) {
+    private byte[] tryEncrypt(byte[] plainMessage) {
         try {
             return executeAlgorithmFor(plainMessage);
         } catch (IllegalBlockSizeException | BadPaddingException e) {
@@ -43,14 +43,14 @@ public class MessageEncrypterImpl2 implements MessageEncrypter {
         }
     }
 
-    public byte[] decode(byte[] encodedMessage) {
+    public byte[] decrypt(byte[] encryptedMessage) {
         trySetCipherMode(Cipher.DECRYPT_MODE);
-        return tryDecode(encodedMessage);
+        return tryDecrypt(encryptedMessage);
     }
 
-    private byte[] tryDecode(byte[] encodedMessage) {
+    private byte[] tryDecrypt(byte[] encryptedMessage) {
         try {
-            return executeAlgorithmFor(encodedMessage);
+            return executeAlgorithmFor(encryptedMessage);
         } catch (BadPaddingException | IllegalBlockSizeException e) {
             throw new IncorrectPrivateKeyException("The provided key was incorrect", e);
         }
