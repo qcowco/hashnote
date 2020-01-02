@@ -7,7 +7,7 @@ import javax.crypto.BadPaddingException;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
 
-public interface MessageEncoder {
+public interface MessageEncrypter {
     byte[] encode(byte[] message);
     byte[] decode(byte[] message) throws IncorrectPrivateKeyException;
     byte[] getSecretKey();

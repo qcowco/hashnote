@@ -5,5 +5,7 @@ public interface AlgorithmDetails {
     String getMode();
     String getPadding();
     int getKeySize();
+    int getKeyByteSize();
     int getVectorSize();
+    int getVectorByteSize();
 }

@@ -8,7 +8,7 @@ public class Aes256Details implements AlgorithmDetails {
     private String mode = "CBC";
     private String padding = "PKCS5Padding";
     private int keySize = 256;
-    private int vectorSize = 16;
+    private int vectorSize = 128;
 
     @Override
     public String getMethod() {
@@ -31,8 +31,18 @@ public class Aes256Details implements AlgorithmDetails {
     }
 
     @Override
+    public int getKeyByteSize() {
+        return keySize/8;
+    }
+
+    @Override
     public int getVectorSize() {
         return vectorSize;
+    }
+
+    @Override
+    public int getVectorByteSize() {
+        return vectorSize/8;
     }
 }
 // TODO: 28.12.2019 add - triple DES, Blowfish, Twofish[, RSA?]

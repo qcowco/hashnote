@@ -1,4 +1,4 @@
-package com.project.hashnote.dto;
+package com.project.hashnote.note.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -11,5 +11,17 @@ import lombok.Setter;
 @AllArgsConstructor
 public class NoteRequest {
     private NoteDto noteDto;
-    private EncodingDetails encodingDetails;
+    private String method;
+
+    public String getId() {
+        return noteDto.getId();
+    }
+
+    public String getName() {
+        return noteDto.getName();
+    }
+
+    public String getContent() {
+        return noteDto.getContent();
+    }
 }

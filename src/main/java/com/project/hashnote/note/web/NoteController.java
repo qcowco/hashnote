@@ -1,6 +1,5 @@
-package com.project.hashnote.web;
+package com.project.hashnote.note.web;
 
-import com.project.hashnote.note.dto.EncodingDetails;
 import com.project.hashnote.note.dto.NoteDto;
 import com.project.hashnote.note.dto.NoteRequest;
 import com.project.hashnote.note.service.NoteService;
@@ -10,6 +9,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/notes")
@@ -32,19 +32,27 @@ public class NoteController {
     }
 
     @GetMapping("/{id}/{secretKey}")
-    public NoteDto getOneDecoded(@PathVariable(name = "id") String id, @PathVariable(name = "secretKey") String secretKey) { // TODO: 30.12.2019 validation keys
+    public NoteDto getOneDecoded(@PathVariable String id, @PathVariable String secretKey) { // TODO: 30.12.2019 validation keys
         return noteService.getDecrypted(id, secretKey);
     }
 
     @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE) // TODO: 28.12.2019 validation
+    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE) // TODO: 28.12.2019 validation, disable id
     public String save(@RequestBody NoteRequest noteRequest) {
         return noteService.save(noteRequest);
     }
 
     @PatchMapping("/{id}/{secretKey}")
-    public String patch(@RequestBody EncodingDetails encodingDetails, @PathVariable String id, @PathVariable String secretKey){ // TODO: 30.12.2019 validation
-        return noteService.patch(encodingDetails, id, secretKey);
+    public String patch(@RequestBody Map<String, String> jsonMap, @PathVariable String id, @PathVariable String secretKey){ // TODO: 30.12.2019 validation
+        String method = tryGetKey(jsonMap, "method");
+        return noteService.patch(method, id, secretKey);
+    }
+
+    private String tryGetKey(Map<String, String> jsonBody, String key) {
+        if(!jsonBody.containsKey(key))
+            throw new IllegalArgumentException("Missing argument: " + key);
+
+        return jsonBody.get(key);
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)

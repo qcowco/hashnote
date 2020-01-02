@@ -1,4 +1,4 @@
-package com.project.hashnote.note.document;
+package com.project.hashnote.note.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -10,6 +10,8 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class EncryptionDetails {
-    private String vector;
+    private byte[] message;
+    private byte[] secretKey;
+    private byte[] vector;
     private String method;
 }

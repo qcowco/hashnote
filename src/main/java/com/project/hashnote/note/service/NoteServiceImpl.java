@@ -1,8 +1,11 @@
-package com.project.hashnote.service;
+package com.project.hashnote.note.service;
 
-import com.project.hashnote.dao.NoteRepository;
-import com.project.hashnote.document.Note;
-import com.project.hashnote.note.dto.EncodingDetails;
+import com.project.hashnote.note.mapper.EncryptionMapper;
+import com.project.hashnote.note.util.NoteEncoder;
+import com.project.hashnote.note.util.NoteEncrypter;
+import com.project.hashnote.note.dao.NoteRepository;
+import com.project.hashnote.note.document.Note;
+import com.project.hashnote.note.dto.EncryptionDetails;
 import com.project.hashnote.note.dto.NoteDto;
 import com.project.hashnote.note.dto.NoteRequest;
 import com.project.hashnote.note.mapper.NoteMapper;
@@ -17,28 +20,49 @@ import java.util.Optional;
 public class NoteServiceImpl implements NoteService {
 
     private NoteEncoder noteEncoder;
+    private NoteEncrypter noteEncrypter;
     private NoteRepository noteRepository;
     private NoteMapper noteMapper;
+    private EncryptionMapper encryptionMapper;
 
     @Autowired
-    public NoteServiceImpl(NoteRepository noteRepository, NoteMapper noteMapper, NoteEncoder noteEncoder) {
+    public NoteServiceImpl(NoteEncoder noteEncoder, NoteEncrypter noteEncrypter, NoteRepository noteRepository,
+                           NoteMapper noteMapper, EncryptionMapper encryptionMapper) {
+        this.noteEncoder = noteEncoder;
+        this.noteEncrypter = noteEncrypter;
         this.noteRepository = noteRepository;
         this.noteMapper = noteMapper;
-        this.noteEncoder = noteEncoder;
+        this.encryptionMapper = encryptionMapper;
     }
 
     @Override
     public String save(NoteRequest noteRequest) {
-        noteRequest.getNoteDto().setId(null);
+        if(requestHasNoteId(noteRequest) && noteExists(noteRequest.getId()))
+            throw new IllegalArgumentException("There's already a note with id: " + noteRequest.getId());
 
-        NoteRequest encodedRequest = noteEncoder.encodeRequest(noteRequest);
+        return saveRequest(noteRequest);
+    }
 
-        Note note = noteMapper.requestToNote(encodedRequest);
+    private String saveRequest(NoteRequest noteRequest) {
+        EncryptionDetails encryptionDetails = noteEncrypter.encrypt(noteRequest);
+        EncryptionDetails encodedResult = noteEncoder.encode(encryptionDetails);
+
+        Note note = noteMapper.requestToNote(noteRequest);
+
+        encryptionMapper.copyProperties(encodedResult, note);
+
         Note persistedNote = noteRepository.save(note);
 
-        EncodingDetails encodingDetails = encodedRequest.getEncodingDetails();
+        return persistedNote.getId() + "/" + new String(encodedResult.getSecretKey());
+    }
 
-        return persistedNote.getId() + "/" + encodingDetails.getKey();
+    private boolean requestHasNoteId(NoteRequest noteRequest) {
+        return noteRequest.getId() != null;
+    }
+
+    private boolean noteExists(String id) {
+        return noteRepository.findById(id)
+                .isPresent();
     }
 
     @Override
@@ -59,9 +83,12 @@ public class NoteServiceImpl implements NoteService {
     public NoteDto getDecrypted(String id, String secretKey) {
         Note note = tryGetNoteById(id);
 
-        byte[] decryptedMessage = noteEncoder.decrypt(note, secretKey);
+        EncryptionDetails encodedDetails = encryptionMapper.noteAndKeyToEncryption(note, secretKey);
+        EncryptionDetails encryptedDetails = noteEncoder.decode(encodedDetails);
 
-        note.setContent(decryptedMessage);
+        byte[] decryptedMessage = noteEncrypter.decrypt(encryptedDetails);
+
+        note.setContent(new String(decryptedMessage));
 
         return noteMapper.noteToNoteDto(note);
     }
@@ -76,20 +103,14 @@ public class NoteServiceImpl implements NoteService {
     }
 
     @Override
-    public String patch(EncodingDetails encodingDetails, String id, String secretKey) {
+    public String patch(String method, String id, String secretKey) {
         NoteDto decryptedDto = getDecrypted(id, secretKey);
 
         NoteRequest noteRequest = new NoteRequest();
         noteRequest.setNoteDto(decryptedDto);
-        noteRequest.setEncodingDetails(encodingDetails);
+        noteRequest.setMethod(method);
 
-        NoteRequest encodedRequest = noteEncoder.encodeRequest(noteRequest);
-        EncodingDetails encodingResult = encodedRequest.getEncodingDetails();
-
-        Note note = noteMapper.requestToNote(encodedRequest);
-        Note persistedNote = noteRepository.save(note);
-
-        return persistedNote.getId() + "/" + encodingResult.getKey();
+        return saveRequest(noteRequest);
     }
 
     @Override

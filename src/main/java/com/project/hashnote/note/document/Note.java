@@ -1,4 +1,4 @@
-package com.project.hashnote.document;
+package com.project.hashnote.note.document;
 
 import lombok.*;
 import org.springframework.data.annotation.Id;
@@ -23,8 +23,8 @@ public class Note {
     private String name;
     @NotNull
     @Size(min = 1, max = 3000)
-    private byte[] content;
-    private EncodingDetails encodingDetails;
+    private String content;
+    private EncryptionDetails encryptionDetails;
     private String author;
 
     @Override

@@ -1,4 +1,4 @@
-package com.project.hashnote.dto;
+package com.project.hashnote.note.dto;
 
 import lombok.*;
 
