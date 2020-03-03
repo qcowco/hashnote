@@ -7,7 +7,7 @@ import static org.apache.tomcat.util.codec.binary.Base64.encodeBase64;
 import static org.apache.tomcat.util.codec.binary.Base64.decodeBase64;
 
 @Component
-public class NoteEncoderImpl implements NoteEncoder {
+public class Base64Encoder implements NoteEncoder {
     @Override
     public EncryptionDetails encode(EncryptionDetails encryptionDetails) {
         EncryptionDetails encodedResult = new EncryptionDetails();

@@ -5,11 +5,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import javax.validation.Valid;
+
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class NoteRequest {
+    @Valid
     private NoteDto noteDto;
     private String method;
 
@@ -17,11 +20,11 @@ public class NoteRequest {
         return noteDto.getId();
     }
 
-    public String getName() {
-        return noteDto.getName();
+    public String getMessage() {
+        return noteDto.getMessage();
     }
 
-    public String getContent() {
-        return noteDto.getContent();
+    public boolean hasNoteId() {
+        return noteDto.getId() != null;
     }
 }

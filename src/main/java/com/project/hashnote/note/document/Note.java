@@ -23,7 +23,7 @@ public class Note {
     private String name;
     @NotNull
     @Size(min = 1, max = 3000)
-    private String content;
+    private String message;
     private EncryptionDetails encryptionDetails;
     private String author;
 

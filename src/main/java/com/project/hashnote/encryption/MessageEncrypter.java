@@ -1,11 +1,10 @@
 package com.project.hashnote.encryption;
 
 import com.project.hashnote.encryption.exceptions.IncorrectPrivateKeyException;
+import com.project.hashnote.note.dto.EncryptionDetails;
 
 public interface MessageEncrypter {
-    byte[] encrypt(byte[] message);
-    byte[] decrypt(byte[] message) throws IncorrectPrivateKeyException;
-    byte[] getSecretKey();
-    byte[] getInitVector();
-    String getMethod();
+    void encrypt(byte[] message);
+    void decrypt(byte[] message) throws IncorrectPrivateKeyException;
+    EncryptionDetails getEncryptionDetails();
 }

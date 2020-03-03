@@ -1,12 +1,10 @@
 package com.project.hashnote.note.util;
 
 import com.project.hashnote.encryption.MessageEncrypter;
-import com.project.hashnote.encryption.MessageEncrypterImpl;
+import com.project.hashnote.encryption.MessageEncrypterBuilder;
 import com.project.hashnote.encryption.algorithms.AlgorithmDetails;
 import com.project.hashnote.encryption.exceptions.InvalidAlgorithmNameException;
-import com.project.hashnote.note.dto.NoteRequest;
 import com.project.hashnote.note.dto.EncryptionDetails;
-import com.project.hashnote.note.mapper.EncryptionMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -15,46 +13,35 @@ import java.util.List;
 @Component
 public class NoteEncrypterImpl implements NoteEncrypter {
     private List<AlgorithmDetails> algorithms;
-    private EncryptionMapper encryptionMapper;
+    private MessageEncrypterBuilder builder;
 
     @Autowired
-    public NoteEncrypterImpl(List<AlgorithmDetails> algorithms, EncryptionMapper encryptionMapper) {
+    public NoteEncrypterImpl(List<AlgorithmDetails> algorithms, MessageEncrypterBuilder builder) {
         this.algorithms = algorithms;
-        this.encryptionMapper = encryptionMapper;
+        this.builder = builder;
     }
 
     @Override
-    public EncryptionDetails encrypt(NoteRequest request) {
+    public EncryptionDetails encrypt(EncryptionDetails encryptionDetails) {
+        MessageEncrypter messageEncrypter = buildEncrypterFor(encryptionDetails);
 
-        EncryptionDetails encryptionDetails = encryptionMapper.getEncryptionDetails(request);
+        messageEncrypter.encrypt(encryptionDetails.getMessage());
 
-        MessageEncrypter messageEncoder = getEncrypterFor(encryptionDetails);
-
-        byte[] plainMessage = request.getContent().getBytes();
-        byte[] encryptedMessage = messageEncoder.encrypt(plainMessage);
-
-        return new EncryptionDetails(encryptedMessage, messageEncoder.getSecretKey(),
-                messageEncoder.getInitVector(), messageEncoder.getMethod());
+        return messageEncrypter.getEncryptionDetails();
     }
 
-    private MessageEncrypter getEncrypterFor(EncryptionDetails encryptionDetails){
+    private MessageEncrypter buildEncrypterFor(EncryptionDetails encryptionDetails){
         AlgorithmDetails algorithmDetails = tryGetAlgorithm(encryptionDetails.getMethod());
 
-        MessageEncrypterImpl.EncrypterBuilder builder = MessageEncrypterImpl.builder()
-                .algorithmDetails(algorithmDetails);
-
-        if(encryptionDetails.getSecretKey() != null)
-            builder.secretKey(encryptionDetails.getSecretKey());
-
-        if(encryptionDetails.getVector() != null)
-            builder.initVector(encryptionDetails.getVector());
+        builder.algorithmDetails(algorithmDetails);
+        builder.encryptionDetails(encryptionDetails);
 
         return builder.build();
     }
 
     private AlgorithmDetails tryGetAlgorithm(String method) {
         return algorithms.stream()
-                .filter(alg -> alg.getMethod().equals(method))
+                .filter(alg -> alg.isMethod(method))
                 .findFirst()
                 .orElseThrow(
                         () -> new InvalidAlgorithmNameException("No algorithm found with name: " + method)
@@ -63,11 +50,10 @@ public class NoteEncrypterImpl implements NoteEncrypter {
 
     @Override
     public byte[] decrypt(EncryptionDetails encryptionDetails) {
-        MessageEncrypter messageEncoder = getEncrypterFor(encryptionDetails);
+        MessageEncrypter messageEncrypter = buildEncrypterFor(encryptionDetails);
 
-        byte[] encryptedMessage = encryptionDetails.getMessage();
-        byte[] decryptedMessage = messageEncoder.decrypt(encryptedMessage);
+        messageEncrypter.decrypt(encryptionDetails.getMessage());
 
-        return decryptedMessage;
+        return messageEncrypter.getEncryptionDetails().getMessage();
     }
 }

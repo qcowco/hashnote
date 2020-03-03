@@ -37,32 +37,29 @@ public class NoteServiceImpl implements NoteService {
 
     @Override
     public String save(NoteRequest noteRequest) {
-        if(requestHasNoteId(noteRequest) && noteExists(noteRequest.getId()))
+        if(noteRequest.hasNoteId() && noteExists(noteRequest.getId()))
             throw new IllegalArgumentException("There's already a note with id: " + noteRequest.getId());
 
         return saveRequest(noteRequest);
     }
 
+    private boolean noteExists(String id) {
+        return noteRepository.findById(id).isPresent();
+    }
+
     private String saveRequest(NoteRequest noteRequest) {
-        EncryptionDetails encryptionDetails = noteEncrypter.encrypt(noteRequest);
-        EncryptionDetails encodedResult = noteEncoder.encode(encryptionDetails);
+        EncryptionDetails requestEncryption = encryptionMapper.getEncryptionDetails(noteRequest);
+
+        EncryptionDetails resultEncryption = noteEncrypter.encrypt(requestEncryption);
+
+        EncryptionDetails encodedEncryption = noteEncoder.encode(resultEncryption);
 
         Note note = noteMapper.requestToNote(noteRequest);
-
-        encryptionMapper.copyProperties(encodedResult, note);
+        encryptionMapper.copyProperties(encodedEncryption, note);
 
         Note persistedNote = noteRepository.save(note);
 
-        return persistedNote.getId() + "/" + new String(encodedResult.getSecretKey());
-    }
-
-    private boolean requestHasNoteId(NoteRequest noteRequest) {
-        return noteRequest.getId() != null;
-    }
-
-    private boolean noteExists(String id) {
-        return noteRepository.findById(id)
-                .isPresent();
+        return persistedNote.getId() + "/" + new String(encodedEncryption.getSecretKey());
     }
 
     @Override
@@ -88,7 +85,7 @@ public class NoteServiceImpl implements NoteService {
 
         byte[] decryptedMessage = noteEncrypter.decrypt(encryptedDetails);
 
-        note.setContent(new String(decryptedMessage));
+        note.setMessage(new String(decryptedMessage));
 
         return noteMapper.noteToNoteDto(note);
     }
@@ -104,6 +101,8 @@ public class NoteServiceImpl implements NoteService {
 
     @Override
     public String patch(String method, String id, String secretKey) {
+        tryGetNoteById(id);
+
         NoteDto decryptedDto = getDecrypted(id, secretKey);
 
         NoteRequest noteRequest = new NoteRequest();

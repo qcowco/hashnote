@@ -13,13 +13,13 @@ public interface NoteMapper {
     @Named("fromDto")
     @Mapping(source = "noteDto.id", target = "id")
     @Mapping(source = "noteDto.name", target = "name")
-    @Mapping(source = "noteDto.content", target = "content", qualifiedByName = "toBytes")
+    @Mapping(source = "noteDto.message", target = "message", qualifiedByName = "toBytes")
     @Mapping(source = "method", target = "encryptionDetails.method")
     @Mapping(ignore = true, target = "author")
     Note requestToNote(NoteRequest noteRequest);
 
     @Named("toDto")
-    @Mapping(source = "content", target = "content", qualifiedByName = "toString")
+    @Mapping(source = "message", target = "message", qualifiedByName = "toString")
     NoteDto noteToNoteDto(Note note);
 
     @IterableMapping(qualifiedByName = "toDto")

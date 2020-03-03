@@ -6,15 +6,19 @@ import com.project.hashnote.note.service.NoteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.validation.Errors;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/notes")
+@CrossOrigin
 public class NoteController {
-    NoteService noteService;
+    private NoteService noteService;
 
     @Autowired
     public NoteController(NoteService noteService) {
@@ -37,13 +41,13 @@ public class NoteController {
     }
 
     @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE) // TODO: 28.12.2019 validation, disable id
-    public String save(@RequestBody NoteRequest noteRequest) {
+    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    public String save(@Valid @RequestBody NoteRequest noteRequest) {
         return noteService.save(noteRequest);
     }
 
     @PatchMapping("/{id}/{secretKey}")
-    public String patch(@RequestBody Map<String, String> jsonMap, @PathVariable String id, @PathVariable String secretKey){ // TODO: 30.12.2019 validation
+    public String patch(@RequestBody Map<String, String> jsonMap, @PathVariable String id, @PathVariable String secretKey){
         String method = tryGetKey(jsonMap, "method");
         return noteService.patch(method, id, secretKey);
     }
