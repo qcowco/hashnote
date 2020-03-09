@@ -13,11 +13,11 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
 @Component
-public class DESede192Details implements AlgorithmDetails {
+public class DESede168Details implements AlgorithmDetails {
     private final String method = "DESede";
     private final String mode = "CBC";
     private final String padding = "PKCS5Padding";
-    private final int keySize = 192;
+    private final int keySize = 168;
     private final int vectorSize = 64;
 
     @Override
@@ -49,7 +49,7 @@ public class DESede192Details implements AlgorithmDetails {
 
     @Override
     public boolean isKeyProperLength(byte[] key) {
-        return key.length == 24;
+        return key.length == (keySize + 24)/8;
     }
 
     public IvParameterSpec randomInitVector() {
@@ -89,5 +89,4 @@ public class DESede192Details implements AlgorithmDetails {
                     ("Provided algorithm's properties don't match up with expected values", e);
         }
     }
-
 }
