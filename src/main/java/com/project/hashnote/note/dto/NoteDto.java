@@ -19,6 +19,6 @@ public class NoteDto {
     @Length(max = 40)
     private String name;
     @NotNull
-    @Length(min = 1, max = 4000)
+    @Length(min = 1, max = 20000)
     private String message;
 }
