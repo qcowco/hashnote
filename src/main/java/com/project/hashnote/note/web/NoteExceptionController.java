@@ -4,6 +4,7 @@ import com.project.hashnote.encryption.exceptions.IncorrectPrivateKeyException;
 import com.project.hashnote.encryption.exceptions.InvalidAlgorithmNameException;
 import com.project.hashnote.encryption.exceptions.MalformedPrivateKeyException;
 import com.project.hashnote.exceptions.ResourceNotFoundException;
+import com.project.hashnote.security.exception.UnauthorizedAccessException;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;

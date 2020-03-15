@@ -6,8 +6,8 @@ import com.project.hashnote.note.service.NoteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.validation.Errors;
-import org.springframework.validation.FieldError;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -25,10 +25,15 @@ public class NoteController {
         this.noteService = noteService;
     }
 
-    @GetMapping()
-    public List<NoteDto> getAll(){
-        return noteService.getAll();
+    @GetMapping
+    public List<NoteDto> getAll(@AuthenticationPrincipal UserDetails user){
+        return noteService.getAllBy(user.getUsername());
     }
+
+//    @GetMapping("/users")
+//    public List<NoteDto> getAllBy(@AuthenticationPrincipal UserDetails user) {
+//        return noteService.getAllBy(user.getUsername());
+//    }
 
     @GetMapping("/{id}")
     public NoteDto getOne(@PathVariable String id){
@@ -40,16 +45,18 @@ public class NoteController {
         return noteService.getDecrypted(id, secretKey);
     }
 
+
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public String save(@Valid @RequestBody NoteRequest noteRequest) {
-        return noteService.save(noteRequest);
+    public String save(@Valid @RequestBody NoteRequest noteRequest, @AuthenticationPrincipal UserDetails user) {
+        return noteService.save(noteRequest, user);
     }
 
     @PatchMapping("/{id}/{secretKey}")
-    public String patch(@RequestBody Map<String, String> jsonMap, @PathVariable String id, @PathVariable String secretKey){
+    public String patch(@RequestBody Map<String, String> jsonMap, @AuthenticationPrincipal UserDetails user,
+                        @PathVariable String id, @PathVariable String secretKey){
         String method = tryGetKey(jsonMap, "method");
-        return noteService.patch(method, id, secretKey);
+        return noteService.patch(method, user, id, secretKey);
     }
 
     private String tryGetKey(Map<String, String> jsonBody, String key) {
