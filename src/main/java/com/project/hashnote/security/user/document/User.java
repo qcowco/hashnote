@@ -1,4 +1,4 @@
-package com.project.hashnote.user.document;
+package com.project.hashnote.security.user.document;
 
 import lombok.*;
 import org.springframework.data.mongodb.core.mapping.Document;

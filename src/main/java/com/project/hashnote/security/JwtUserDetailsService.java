@@ -1,7 +1,7 @@
 package com.project.hashnote.security;
 
-import com.project.hashnote.user.dao.UserRepository;
-import com.project.hashnote.user.document.User;
+import com.project.hashnote.security.user.dao.UserRepository;
+import com.project.hashnote.security.user.document.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

@@ -1,6 +1,6 @@
-package com.project.hashnote.user.dao;
+package com.project.hashnote.security.user.dao;
 
-import com.project.hashnote.user.document.User;
+import com.project.hashnote.security.user.document.User;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.Optional;
