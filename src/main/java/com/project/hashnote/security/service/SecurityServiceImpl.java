@@ -24,14 +24,19 @@ public class SecurityServiceImpl implements SecurityService {
         String username = request.getUsername();
         String password = passwordEncoder.encode(request.getPassword());
 
-        if (userExists(username))
-            throw new UserExistsException("This username is already taken: " + username);
+        isAvailable(username);
 
         userRepository.save(new User(username, password));
 
     }
 
-    private boolean userExists(String username) {
+    private void isAvailable(String username) {
+        if(userExists(username))
+            throw new UserExistsException("This username is already taken: " + username);
+    }
+
+    @Override
+    public boolean userExists(String username) {
         return userRepository.findByUsername(username)
                 .isPresent();
     }
