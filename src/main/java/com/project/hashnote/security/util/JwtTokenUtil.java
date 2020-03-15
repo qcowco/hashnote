@@ -4,25 +4,24 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import java.util.Date;
 import java.util.function.Function;
 
+@Component
 public class JwtTokenUtil {
     @Value("${jwt.expire}")
     private int TIME_TO_EXPIRE;
     @Value("${jwt.secret}")
     private String base64Secret;
-    private String token;
 
     public String gerUsernameFromToken(String token) {
-        this.token = token;
-        return getClaimFromToken(Claims::getSubject);
+        return getClaimFromToken(token, Claims::getSubject);
     }
 
     public Date getExpirationDateFromToken(String token) {
-        this.token = token;
-        return getClaimFromToken(Claims::getExpiration);
+        return getClaimFromToken(token, Claims::getExpiration);
     }
 
     public boolean isExpired(String token) {
@@ -30,11 +29,12 @@ public class JwtTokenUtil {
         return getExpirationDateFromToken(token).before(now);
     }
 
-    private <T> T getClaimFromToken(Function<Claims, T> claimsResolver) {
-        return claimsResolver.apply(getClaimsFromToken());
+    private <T> T getClaimFromToken(String token, Function<Claims, T> claimsResolver) {
+        Claims claims = getClaimsFromToken(token);
+        return claimsResolver.apply(claims);
     }
 
-    private Claims getClaimsFromToken() {
+    private Claims getClaimsFromToken(String token) {
         return Jwts.parser()
                 .setSigningKey(base64Secret)
                 .parseClaimsJws(token)
@@ -44,7 +44,7 @@ public class JwtTokenUtil {
     public String generateToken(String username) {
         return Jwts.builder()
                 .setSubject(username)
-                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + TIME_TO_EXPIRE))
                 .signWith(SignatureAlgorithm.HS512, base64Secret)
                 .compact();
