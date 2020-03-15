@@ -11,6 +11,7 @@ import com.project.hashnote.note.dto.NoteRequest;
 import com.project.hashnote.note.mapper.NoteMapper;
 import com.project.hashnote.exceptions.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -36,18 +37,18 @@ public class NoteServiceImpl implements NoteService {
     }
 
     @Override
-    public String save(NoteRequest noteRequest) {
+    public String save(NoteRequest noteRequest, UserDetails user) {
         if(noteRequest.hasNoteId() && noteExists(noteRequest.getId()))
             throw new IllegalArgumentException("There's already a note with id: " + noteRequest.getId());
 
-        return saveRequest(noteRequest);
+        return saveRequest(noteRequest, user);
     }
 
     private boolean noteExists(String id) {
         return noteRepository.findById(id).isPresent();
     }
 
-    private String saveRequest(NoteRequest noteRequest) {
+    private String saveRequest(NoteRequest noteRequest, UserDetails user) {
         EncryptionDetails requestEncryption = encryptionMapper.getEncryptionDetails(noteRequest);
 
         EncryptionDetails resultEncryption = noteEncrypter.encrypt(requestEncryption);
@@ -55,6 +56,10 @@ public class NoteServiceImpl implements NoteService {
         EncryptionDetails encodedEncryption = noteEncoder.encode(resultEncryption);
 
         Note note = noteMapper.requestToNote(noteRequest);
+        if (user != null) {
+            note.setAuthor(user.getUsername());
+        }
+
         encryptionMapper.copyProperties(encodedEncryption, note);
 
         Note persistedNote = noteRepository.save(note);
@@ -65,6 +70,13 @@ public class NoteServiceImpl implements NoteService {
     @Override
     public List<NoteDto> getAll() {
         List<Note> notes = noteRepository.findAll();
+
+        return noteMapper.noteToNoteDtoList(notes);
+    }
+
+    @Override
+    public List<NoteDto> getAllBy(String username) {
+        List<Note> notes = noteRepository.findByAuthor(username);
 
         return noteMapper.noteToNoteDtoList(notes);
     }
@@ -92,15 +104,13 @@ public class NoteServiceImpl implements NoteService {
 
 
     private Note tryGetNoteById(String id) {
-        Optional<Note> optionalNote = noteRepository.findById(id);
-
-        return optionalNote.orElseThrow(
+        return noteRepository.findById(id).orElseThrow(
                 () -> new ResourceNotFoundException("No note found with id: " + id)
         );
     }
 
     @Override
-    public String patch(String method, String id, String secretKey) {
+    public String patch(String method, UserDetails user, String id, String secretKey) {
         tryGetNoteById(id);
 
         NoteDto decryptedDto = getDecrypted(id, secretKey);
@@ -109,11 +119,13 @@ public class NoteServiceImpl implements NoteService {
         noteRequest.setNoteDto(decryptedDto);
         noteRequest.setMethod(method);
 
-        return saveRequest(noteRequest);
+        return saveRequest(noteRequest, user);
     }
 
     @Override
     public void delete(String id) {
         noteRepository.deleteById(id);
     }
+
+
 }
