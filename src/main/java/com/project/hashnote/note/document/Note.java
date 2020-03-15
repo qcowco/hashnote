@@ -4,25 +4,14 @@ import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import javax.validation.constraints.Max;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 import java.util.Objects;
 
-@Getter
-@Setter
-@ToString
 @NoArgsConstructor
-@AllArgsConstructor
-@Builder
 @Document(collection = "notes")
-public class Note {
+public @Data class Note {
     @Id
     private String id;
-    @Max(20)
     private String name;
-    @NotNull
-    @Size(min = 1, max = 3000)
     private String message;
     private EncryptionDetails encryptionDetails;
     private String author;
