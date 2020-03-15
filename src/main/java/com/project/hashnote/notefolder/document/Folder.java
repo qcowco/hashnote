@@ -1,19 +1,19 @@
-package com.project.hashnote.document;
+package com.project.hashnote.notefolder.document;
 
 import lombok.*;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
+import java.util.Map;
 
-@Getter
-@Setter
 @NoArgsConstructor
-@Builder
-@AllArgsConstructor
 @Document(collection = "folders")
-public class Folder {
+public @Data class Folder {
     private String id;
+    @NonNull
     private String name;
-    private String ownerId;
-    private List<String> notes;
+    @NonNull
+    private String author;
+    @NonNull
+    private Map<String, String> noteIdName;
 }
