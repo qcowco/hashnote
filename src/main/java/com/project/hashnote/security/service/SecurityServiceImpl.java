@@ -2,14 +2,14 @@ package com.project.hashnote.security.service;
 
 import com.project.hashnote.security.dto.JwtRequest;
 import com.project.hashnote.security.exception.UserExistsException;
-import com.project.hashnote.user.dao.UserRepository;
-import com.project.hashnote.user.document.User;
+import com.project.hashnote.security.user.dao.UserRepository;
+import com.project.hashnote.security.user.document.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 @Component
-public class SecurityServiceImpl {
+public class SecurityServiceImpl implements SecurityService {
     private UserRepository userRepository;
     private PasswordEncoder passwordEncoder;
 
@@ -19,6 +19,7 @@ public class SecurityServiceImpl {
         this.passwordEncoder = passwordEncoder;
     }
 
+    @Override
     public void save(JwtRequest request) {
         String username = request.getUsername();
         String password = passwordEncoder.encode(request.getPassword());
