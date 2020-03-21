@@ -30,11 +30,6 @@ public class NoteController {
         return noteService.getAllBy(user.getUsername());
     }
 
-//    @GetMapping("/users")
-//    public List<NoteDto> getAllBy(@AuthenticationPrincipal UserDetails user) {
-//        return noteService.getAllBy(user.getUsername());
-//    }
-
     @GetMapping("/{id}")
     public NoteDto getOne(@PathVariable String id){
         return noteService.getEncrypted(id);
@@ -49,14 +44,20 @@ public class NoteController {
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public String save(@Valid @RequestBody NoteRequest noteRequest, @AuthenticationPrincipal UserDetails user) {
-        return noteService.save(noteRequest, user);
+
+        String username = "anon";
+        if (user != null)
+            username = user.getUsername();
+
+        return noteService.save(noteRequest, username);
     }
 
     @PatchMapping("/{id}/{secretKey}")
     public String patch(@RequestBody Map<String, String> jsonMap, @AuthenticationPrincipal UserDetails user,
                         @PathVariable String id, @PathVariable String secretKey){
         String method = tryGetKey(jsonMap, "method");
-        return noteService.patch(method, user, id, secretKey);
+
+        return noteService.patch(method, user.getUsername(), id, secretKey);
     }
 
     private String tryGetKey(Map<String, String> jsonBody, String key) {

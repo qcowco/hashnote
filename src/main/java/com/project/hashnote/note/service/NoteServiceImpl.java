@@ -11,11 +11,9 @@ import com.project.hashnote.note.dto.NoteRequest;
 import com.project.hashnote.note.mapper.NoteMapper;
 import com.project.hashnote.exceptions.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class NoteServiceImpl implements NoteService {
@@ -37,18 +35,18 @@ public class NoteServiceImpl implements NoteService {
     }
 
     @Override
-    public String save(NoteRequest noteRequest, UserDetails user) {
+    public String save(NoteRequest noteRequest, String username) {
         if(noteRequest.hasNoteId() && noteExists(noteRequest.getId()))
             throw new IllegalArgumentException("There's already a note with id: " + noteRequest.getId());
 
-        return saveRequest(noteRequest, user);
+        return saveRequest(noteRequest, username);
     }
 
     private boolean noteExists(String id) {
         return noteRepository.findById(id).isPresent();
     }
 
-    private String saveRequest(NoteRequest noteRequest, UserDetails user) {
+    private String saveRequest(NoteRequest noteRequest, String username) {
         EncryptionDetails requestEncryption = encryptionMapper.getEncryptionDetails(noteRequest);
 
         EncryptionDetails resultEncryption = noteEncrypter.encrypt(requestEncryption);
@@ -56,9 +54,7 @@ public class NoteServiceImpl implements NoteService {
         EncryptionDetails encodedEncryption = noteEncoder.encode(resultEncryption);
 
         Note note = noteMapper.requestToNote(noteRequest);
-        if (user != null) {
-            note.setAuthor(user.getUsername());
-        }
+        note.setAuthor(username);
 
         encryptionMapper.copyProperties(encodedEncryption, note);
 
@@ -110,7 +106,7 @@ public class NoteServiceImpl implements NoteService {
     }
 
     @Override
-    public String patch(String method, UserDetails user, String id, String secretKey) {
+    public String patch(String method, String username, String id, String secretKey) {
         tryGetNoteById(id);
 
         NoteDto decryptedDto = getDecrypted(id, secretKey);
@@ -119,7 +115,7 @@ public class NoteServiceImpl implements NoteService {
         noteRequest.setNoteDto(decryptedDto);
         noteRequest.setMethod(method);
 
-        return saveRequest(noteRequest, user);
+        return saveRequest(noteRequest, username);
     }
 
     @Override
@@ -129,3 +125,5 @@ public class NoteServiceImpl implements NoteService {
 
 
 }
+// TODO: 16.03.2020 opcja terminacji po wybranym czasie
+// TODO: 16.03.2020 dodac zapisana date utworzenia notki
