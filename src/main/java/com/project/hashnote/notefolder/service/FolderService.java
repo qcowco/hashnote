@@ -8,8 +8,8 @@ import java.util.List;
 public interface FolderService {
     String save(FolderRequest folderRequest, String author);
     List<Folder> getFoldersBy(String username);
-    void delete(String folderId);
-    void patch(String folderId, String folderName);
-    void saveToFolder(String noteId, String folderId);
-    void removeFromFolder(String noteId, String folderId);
+    void delete(String folderId, String username);
+    void patch(String folderId, String folderName, String username);
+    void saveToFolder(String noteId, String folderId, String username);
+    void removeFromFolder(String noteId, String folderId, String username);
 }

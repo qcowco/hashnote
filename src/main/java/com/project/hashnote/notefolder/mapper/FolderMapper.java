@@ -6,10 +6,10 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
-import java.util.Map;
+import java.util.List;
 
 @Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.SET_TO_NULL)
 public interface FolderMapper {
     @Mapping(ignore = true, target = "id")
-    Folder requestToFolder(FolderRequest request, String author, Map noteIdName);
+    Folder requestToFolder(FolderRequest request, String author, List notes);
 }

@@ -1,4 +1,7 @@
 package com.project.hashnote.notefolder.dto;
 
-public class NoteRequest {
+import lombok.Data;
+
+public @Data class NoteRequest {
+    private String noteId;
 }
