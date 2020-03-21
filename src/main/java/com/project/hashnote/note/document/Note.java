@@ -4,6 +4,8 @@ import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.Objects;
 
 @NoArgsConstructor
@@ -15,6 +17,9 @@ public @Data class Note {
     private String message;
     private EncryptionDetails encryptionDetails;
     private String author;
+    private LocalDateTime createdAt;
+    private LocalDateTime expiresAt;
+
 
     @Override
     public boolean equals(Object o) {

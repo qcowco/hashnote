@@ -11,13 +11,15 @@ import com.project.hashnote.note.dto.NoteRequest;
 import com.project.hashnote.note.mapper.NoteMapper;
 import com.project.hashnote.exceptions.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 @Service
 public class NoteServiceImpl implements NoteService {
-
     private NoteEncoder noteEncoder;
     private NoteEncrypter noteEncrypter;
     private NoteRepository noteRepository;
@@ -54,7 +56,15 @@ public class NoteServiceImpl implements NoteService {
         EncryptionDetails encodedEncryption = noteEncoder.encode(resultEncryption);
 
         Note note = noteMapper.requestToNote(noteRequest);
+
         note.setAuthor(username);
+
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime expired = now.plusMinutes(noteRequest.getMinutesToExpiration());
+
+        note.setCreatedAt(now);
+        if (noteRequest.getMinutesToExpiration() >= 0)
+            note.setExpiresAt(expired);
 
         encryptionMapper.copyProperties(encodedEncryption, note);
 
@@ -123,7 +133,9 @@ public class NoteServiceImpl implements NoteService {
         noteRepository.deleteById(id);
     }
 
-
+    @Override
+    public List<NoteDto> findExpired() {
+        List<Note> expiredNotes = noteRepository.findByExpiresAtBefore(LocalDateTime.now());
+        return noteMapper.noteToNoteDtoList(expiredNotes);
+    }
 }
-// TODO: 16.03.2020 opcja terminacji po wybranym czasie
-// TODO: 16.03.2020 dodac zapisana date utworzenia notki

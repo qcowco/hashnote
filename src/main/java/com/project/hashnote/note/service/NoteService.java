@@ -13,4 +13,5 @@ public interface NoteService {
     NoteDto getDecrypted(String id, String secretKey);
     String patch(String method, String username, String id, String secretKey);
     void delete(String id);
+    List<NoteDto> findExpired();
 }

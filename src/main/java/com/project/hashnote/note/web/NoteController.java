@@ -3,6 +3,7 @@ package com.project.hashnote.note.web;
 import com.project.hashnote.note.dto.NoteDto;
 import com.project.hashnote.note.dto.NoteRequest;
 import com.project.hashnote.note.service.NoteService;
+import com.project.hashnote.notefolder.service.FolderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -19,10 +20,12 @@ import java.util.Map;
 @CrossOrigin
 public class NoteController {
     private NoteService noteService;
+    private FolderService folderService;
 
     @Autowired
-    public NoteController(NoteService noteService) {
+    public NoteController(NoteService noteService, FolderService folderService) {
         this.noteService = noteService;
+        this.folderService = folderService;
     }
 
     @GetMapping
@@ -70,6 +73,10 @@ public class NoteController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/{id}")
     public void delete(@PathVariable String id){
-        noteService.delete(id);
+        NoteDto note = noteService.getEncrypted(id);
+
+        noteService.delete(note.getId());
+        folderService.removeFromAll(note);
     }
 }
+// TODO: 21.03.2020 autoryzacja delete

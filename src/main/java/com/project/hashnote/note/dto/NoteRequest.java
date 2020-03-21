@@ -15,6 +15,7 @@ public class NoteRequest {
     @Valid
     private NoteDto noteDto;
     private String method;
+    private int minutesToExpiration;
 
     public String getId() {
         return noteDto.getId();

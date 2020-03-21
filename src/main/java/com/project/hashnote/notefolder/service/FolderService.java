@@ -1,5 +1,6 @@
 package com.project.hashnote.notefolder.service;
 
+import com.project.hashnote.note.dto.NoteDto;
 import com.project.hashnote.notefolder.document.Folder;
 import com.project.hashnote.notefolder.dto.FolderRequest;
 
@@ -12,4 +13,5 @@ public interface FolderService {
     void patch(String folderId, String folderName, String username);
     void saveToFolder(String noteId, String folderId, String username);
     void removeFromFolder(String noteId, String folderId, String username);
+    void removeFromAll(NoteDto noteDto);
 }
