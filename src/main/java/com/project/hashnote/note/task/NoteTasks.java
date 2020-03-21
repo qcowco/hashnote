@@ -24,7 +24,6 @@ public class NoteTasks {
     public void deleteExpiredNotes() {
         List<NoteDto> expiredNotes = noteService.findExpired();
 
-        System.out.println("usuwam " + expiredNotes);
         for (NoteDto note: expiredNotes) {
             noteService.delete(note.getId());
             folderService.removeFromAll(note);

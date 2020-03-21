@@ -63,7 +63,7 @@ public class NoteServiceImpl implements NoteService {
         LocalDateTime expired = now.plusMinutes(noteRequest.getMinutesToExpiration());
 
         note.setCreatedAt(now);
-        if (noteRequest.getMinutesToExpiration() >= 0)
+        if (noteRequest.getMinutesToExpiration() > 0)
             note.setExpiresAt(expired);
 
         encryptionMapper.copyProperties(encodedEncryption, note);
