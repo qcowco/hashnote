@@ -1,10 +1,12 @@
 package com.project.hashnote.security.config;
 
+import com.project.hashnote.security.JwtExceptionFilter;
 import com.project.hashnote.security.JwtRequestFilter;
 import com.project.hashnote.security.JwtUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.BeanIds;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -22,13 +24,15 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     private JwtUserDetailsService userDetailsService;
     private JwtEntryPoint authenticationEntryPoint;
     private JwtRequestFilter requestFilter;
+    private JwtExceptionFilter jwtExceptionFilter;
 
     @Autowired
-    public WebSecurityConfig(JwtUserDetailsService userDetailsService
-            , JwtEntryPoint authenticationEntryPoint, JwtRequestFilter requestFilter) {
+    public WebSecurityConfig(JwtUserDetailsService userDetailsService, JwtEntryPoint authenticationEntryPoint,
+                             JwtRequestFilter requestFilter, JwtExceptionFilter exceptionHandlerFilter) {
         this.userDetailsService = userDetailsService;
         this.authenticationEntryPoint = authenticationEntryPoint;
         this.requestFilter = requestFilter;
+        this.jwtExceptionFilter = exceptionHandlerFilter;
     }
 
     @Override
@@ -50,7 +54,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                     .authenticated()
                 .antMatchers("/api/v1/folders")
                     .authenticated()
-                .antMatchers("/api/v1/notes")
+                .antMatchers(HttpMethod.GET, "/api/v1/notes")
+                    .authenticated()
+                .antMatchers(HttpMethod.PATCH, "/api/v1/notes/**/**")
                     .authenticated()
                 .anyRequest()
                     .permitAll()
@@ -61,6 +67,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .sessionManagement()
                     .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
+        http.addFilterBefore(jwtExceptionFilter, UsernamePasswordAuthenticationFilter.class);
         http.addFilterBefore(requestFilter, UsernamePasswordAuthenticationFilter.class);
     }
 
