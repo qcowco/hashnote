@@ -1,4 +1,4 @@
-package com.project.hashnote.security;
+package com.project.hashnote.security.config;
 
 import com.project.hashnote.security.user.dao.UserRepository;
 import com.project.hashnote.security.user.document.User;

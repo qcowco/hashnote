@@ -1,4 +1,4 @@
-package com.project.hashnote.security;
+package com.project.hashnote.security.filter;
 
 import io.jsonwebtoken.JwtException;
 import org.springframework.http.HttpStatus;

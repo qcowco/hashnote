@@ -1,5 +1,6 @@
-package com.project.hashnote.security;
+package com.project.hashnote.security.filter;
 
+import com.project.hashnote.security.config.JwtUserDetailsService;
 import com.project.hashnote.security.util.JwtTokenUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;

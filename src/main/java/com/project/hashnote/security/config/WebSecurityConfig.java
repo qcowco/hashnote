@@ -1,8 +1,7 @@
 package com.project.hashnote.security.config;
 
-import com.project.hashnote.security.JwtExceptionFilter;
-import com.project.hashnote.security.JwtRequestFilter;
-import com.project.hashnote.security.JwtUserDetailsService;
+import com.project.hashnote.security.filter.JwtExceptionFilter;
+import com.project.hashnote.security.filter.JwtRequestFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
