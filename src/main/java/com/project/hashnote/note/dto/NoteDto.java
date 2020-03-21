@@ -2,17 +2,11 @@ package com.project.hashnote.note.dto;
 
 import lombok.*;
 import org.hibernate.validator.constraints.Length;
-import org.springframework.hateoas.RepresentationModel;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Null;
 
-@Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
-@EqualsAndHashCode
-public class NoteDto {
+public @Data class NoteDto {
     @Null
     private String id;
     @NotNull

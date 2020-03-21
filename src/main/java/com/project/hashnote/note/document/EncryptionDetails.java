@@ -1,15 +1,11 @@
 package com.project.hashnote.note.document;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
-@Getter
-@Setter
 @NoArgsConstructor
-@AllArgsConstructor
-public class EncryptionDetails {
+public @Data class EncryptionDetails {
+    @NonNull
     private String vector;
+    @NonNull
     private String method;
 }
