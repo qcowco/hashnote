@@ -11,7 +11,7 @@ public interface FolderService {
     List<Folder> getFoldersBy(String username);
     void delete(String folderId, String username);
     void patch(String folderId, String folderName, String username);
-    void saveToFolder(String noteId, String folderId, String username);
+    void saveToFolder(NoteDto noteDto, String folderId, String username);
     void removeFromFolder(String noteId, String folderId, String username);
     void removeFromAll(NoteDto noteDto);
 }

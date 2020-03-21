@@ -11,11 +11,9 @@ import com.project.hashnote.note.dto.NoteRequest;
 import com.project.hashnote.note.mapper.NoteMapper;
 import com.project.hashnote.exceptions.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 
 @Service

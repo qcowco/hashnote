@@ -2,30 +2,23 @@ package com.project.hashnote.notefolder.service;
 
 import com.project.hashnote.exceptions.ResourceNotFoundException;
 import com.project.hashnote.note.dto.NoteDto;
-import com.project.hashnote.note.service.NoteService;
 import com.project.hashnote.notefolder.dao.FolderRepository;
 import com.project.hashnote.notefolder.document.Folder;
 import com.project.hashnote.notefolder.dto.FolderRequest;
 import com.project.hashnote.notefolder.mapper.FolderMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
 
 @Component
 public class FolderServiceImpl implements FolderService {
-    @Autowired
-    @Lazy
-    private NoteService noteService;
     private FolderRepository folderRepository;
     private FolderMapper folderMapper;
 
     @Autowired
-    public FolderServiceImpl(FolderRepository folderRepository, NoteService noteService,
-                             FolderMapper folderMapper) {
+    public FolderServiceImpl(FolderRepository folderRepository, FolderMapper folderMapper) {
         this.folderRepository = folderRepository;
-        this.noteService = noteService;
         this.folderMapper = folderMapper;
     }
 
@@ -68,18 +61,16 @@ public class FolderServiceImpl implements FolderService {
     }
 
     @Override
-    public void saveToFolder(String noteId, String folderId, String username) {
+    public void saveToFolder(NoteDto noteDto, String folderId, String username) {
         Folder folder = findFolderBy(username, folderId);
 
         List<NoteDto> notes = folder.getNotes();
 
-        if (notes.stream().anyMatch(note -> noteId.equals(note.getId())))
+        if (notes.stream().anyMatch(note -> noteDto.getId().equals(note.getId())))
             throw new IllegalArgumentException("Note already exists in this folder");
 
-        NoteDto note = noteService.getEncrypted(noteId);
-        note.setMessage("");
-
-        notes.add(note);
+        noteDto.setMessage("");
+        notes.add(noteDto);
 
         folderRepository.save(folder);
     }
@@ -92,6 +83,7 @@ public class FolderServiceImpl implements FolderService {
 
         NoteDto noteDto = notes.stream().filter(note -> noteId.equals(note.getId())).findFirst()
                 .orElseThrow(() -> new ResourceNotFoundException("Note doesn't exist in this folder"));
+
 
         notes.remove(noteDto);
 

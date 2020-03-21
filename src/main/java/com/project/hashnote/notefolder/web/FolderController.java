@@ -1,5 +1,7 @@
 package com.project.hashnote.notefolder.web;
 
+import com.project.hashnote.note.dto.NoteDto;
+import com.project.hashnote.note.service.NoteService;
 import com.project.hashnote.notefolder.document.Folder;
 import com.project.hashnote.notefolder.dto.FolderRequest;
 import com.project.hashnote.notefolder.dto.FolderResponse;
@@ -18,10 +20,12 @@ import java.util.List;
 @RequestMapping("/api/v1/folders")
 public class FolderController {
     private FolderService folderService;
+    private NoteService noteService;
 
     @Autowired
-    public FolderController(FolderService folderService) {
+    public FolderController(FolderService folderService, NoteService noteService) {
         this.folderService = folderService;
+        this.noteService = noteService;
     }
 
     @GetMapping
@@ -53,7 +57,8 @@ public class FolderController {
     @PostMapping("/{folderId}")
     public void saveToFolder(@PathVariable String folderId, @RequestBody NoteRequest noteRequest,
                              @AuthenticationPrincipal UserDetails user) {
-        folderService.saveToFolder(noteRequest.getNoteId(), folderId, user.getUsername());
+        NoteDto noteDto = noteService.getEncrypted(noteRequest.getNoteId());
+        folderService.saveToFolder(noteDto, folderId, user.getUsername());
     }
 
     @DeleteMapping("/{folderId}/notes/{noteId}")
