@@ -14,9 +14,12 @@ import javax.validation.constraints.NotNull;
 @NoArgsConstructor
 @AllArgsConstructor
 public class NoteRequest {
+    @NotNull
     @Valid
     private NoteDto noteDto;
+    @NotNull
     private String method;
+    @Min(0)
     private int minutesToExpiration;
     @Min(0)
     private int maxVisits;

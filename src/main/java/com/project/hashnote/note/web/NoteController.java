@@ -1,5 +1,6 @@
 package com.project.hashnote.note.web;
 
+import com.project.hashnote.note.dto.EncryptionResponse;
 import com.project.hashnote.note.dto.NoteDto;
 import com.project.hashnote.note.dto.NoteRequest;
 import com.project.hashnote.note.service.NoteService;
@@ -12,8 +13,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/notes")
@@ -38,46 +39,34 @@ public class NoteController {
         return noteService.getEncrypted(id);
     }
 
-    @GetMapping("/{id}/{secretKey}")
-    public NoteDto getOneDecrypted(@PathVariable String id, @PathVariable String secretKey) { // TODO: 30.12.2019 validation keys
-        return noteService.getDecrypted(id, secretKey);
+    @GetMapping("/{id}/keys/{key}")
+    public NoteDto getOneDecrypted(@PathVariable String id, @PathVariable String key) {
+        return noteService.getDecrypted(id, key);
     }
-
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public String save(@Valid @RequestBody NoteRequest noteRequest, @AuthenticationPrincipal UserDetails user) {
-
+    public EncryptionResponse save(@Valid @RequestBody NoteRequest noteRequest, @AuthenticationPrincipal UserDetails user) {
         String username = "anon";
+
         if (user != null)
             username = user.getUsername();
 
         return noteService.save(noteRequest, username);
     }
 
-    @PatchMapping("/{id}/{secretKey}")
-    public String patch(@RequestBody Map<String, String> jsonMap, @AuthenticationPrincipal UserDetails user,
+    @PatchMapping("/{id}/keys/{secretKey}")
+    public EncryptionResponse patch(@Valid @RequestBody NoteRequest noteRequest, @AuthenticationPrincipal UserDetails user,
                         @PathVariable String id, @PathVariable String secretKey){
-        String method = tryGetKey(jsonMap, "method");
-
-        return noteService.patch(method, user.getUsername(), id, secretKey);
-    }
-
-    private String tryGetKey(Map<String, String> jsonBody, String key) {
-        if(!jsonBody.containsKey(key))
-            throw new IllegalArgumentException("Missing argument: " + key);
-
-        return jsonBody.get(key);
+        return noteService.patch(noteRequest, user.getUsername(), id, secretKey);
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable String id){
+    public void delete(@PathVariable String id, @AuthenticationPrincipal UserDetails userDetails){
         NoteDto note = noteService.getEncrypted(id);
 
-        noteService.delete(note.getId());
+        noteService.delete(note.getId(), userDetails.getUsername());
         folderService.removeFromAll(note);
     }
 }
-// TODO: 21.03.2020 autoryzacja delete
-// TODO: 21.03.2020 przeniesc secretkey do body requestu

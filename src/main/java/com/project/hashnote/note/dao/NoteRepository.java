@@ -14,5 +14,6 @@ public interface NoteRepository extends MongoRepository<Note, String> {
     List<Note> findByExpiresAtBefore(LocalDateTime now);
     @Query("{$where: \"this.maxVisits > 0 && this.keyVisits >= this.maxVisits\"}")
     List<Note> findAllLimitedNotes();
-
+    Optional<Note> findByAuthorAndId(String username, String id);
+    boolean existsById(String id);
 }

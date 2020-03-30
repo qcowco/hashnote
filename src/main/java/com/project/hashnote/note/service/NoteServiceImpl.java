@@ -1,5 +1,7 @@
 package com.project.hashnote.note.service;
 
+import com.project.hashnote.note.dto.EncryptionResponse;
+import com.project.hashnote.note.exception.UnlockLimitExceededException;
 import com.project.hashnote.note.mapper.EncryptionMapper;
 import com.project.hashnote.note.util.NoteEncoder;
 import com.project.hashnote.note.util.NoteEncrypter;
@@ -15,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class NoteServiceImpl implements NoteService {
@@ -35,47 +38,48 @@ public class NoteServiceImpl implements NoteService {
     }
 
     @Override
-    public String save(NoteRequest noteRequest, String username) {
-        if(noteRequest.hasNoteId() && noteExists(noteRequest.getId()))
-            throw new IllegalArgumentException("There's already a note with id: " + noteRequest.getId());
+    public EncryptionResponse save(NoteRequest noteRequest, String username) {
+        hasUniqueId(noteRequest);
 
         return saveRequest(noteRequest, username);
     }
 
-    private boolean noteExists(String id) {
-        return noteRepository.findById(id).isPresent();
+    private void hasUniqueId(NoteRequest noteRequest) {
+        if(noteRequest.hasNoteId() && noteExists(noteRequest.getId()))
+            throw new IllegalArgumentException("There's already a note with that id.");
     }
 
-    private String saveRequest(NoteRequest noteRequest, String username) {
-        EncryptionDetails requestEncryption = encryptionMapper.getEncryptionDetails(noteRequest);
+    private boolean noteExists(String id) {
+        return noteRepository.existsById(id);
+    }
 
-        EncryptionDetails resultEncryption = noteEncrypter.encrypt(requestEncryption);
+    private EncryptionResponse saveRequest(NoteRequest noteRequest, String username) {
+        EncryptionDetails encryptionDetails = encryptRequest(noteRequest);
+        Note note = getNote(noteRequest, username);
 
-        EncryptionDetails encodedEncryption = noteEncoder.encode(resultEncryption);
-
-        Note note = noteMapper.requestToNote(noteRequest);
-
-        note.setAuthor(username);
-
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime expired = now.plusMinutes(noteRequest.getMinutesToExpiration());
-
-        note.setCreatedAt(now);
-        if (noteRequest.getMinutesToExpiration() > 0)
-            note.setExpiresAt(expired);
-
-        encryptionMapper.copyProperties(encodedEncryption, note);
+        encryptionMapper.copyEncryptionDetails(encryptionDetails, note);
 
         Note persistedNote = noteRepository.save(note);
 
-        return persistedNote.getId() + "/" + new String(encodedEncryption.getSecretKey());
+        return new EncryptionResponse(persistedNote.getId(), new String(encryptionDetails.getSecretKey()));
     }
 
-    @Override
-    public List<NoteDto> getAll() {
-        List<Note> notes = noteRepository.findAll();
+    private Note getNote(NoteRequest noteRequest, String username) {
+        Note noteDto = noteMapper.noteDtoToNote(noteRequest.getNoteDto());
+        Note note = noteMapper.requestToNote(noteRequest);
 
-        return noteMapper.noteToNoteDtoList(notes);
+        noteMapper.copyNote(noteDto, note);
+
+        note.setAuthor(username);
+
+        return note;
+    }
+
+    private EncryptionDetails encryptRequest(NoteRequest noteRequest) {
+        EncryptionDetails requestEncryption = encryptionMapper.getEncryptionDetails(noteRequest);
+        EncryptionDetails resultEncryption = noteEncrypter.encrypt(requestEncryption);
+
+        return noteEncoder.encode(resultEncryption);
     }
 
     @Override
@@ -87,22 +91,21 @@ public class NoteServiceImpl implements NoteService {
 
     @Override
     public NoteDto getEncrypted(String id) {
-        Note note = tryGetNoteById(id);
+        Note note = tryGetNote(id);
 
         return noteMapper.noteToNoteDto(note);
     }
 
     @Override
     public NoteDto getDecrypted(String id, String secretKey) {
-        Note note = tryGetNoteById(id);
+        Note note = tryGetNote(id);
 
         byte[] decryptedMessage = tryUnlockNote(secretKey, note);
 
         return noteMapper.noteAndMessageToNoteDto(note, decryptedMessage);
     }
 
-
-    private Note tryGetNoteById(String id) {
+    private Note tryGetNote(String id) {
         return noteRepository.findById(id).orElseThrow(
                 () -> new ResourceNotFoundException("No note found with id: " + id)
         );
@@ -141,16 +144,30 @@ public class NoteServiceImpl implements NoteService {
     }
 
     @Override
-    public String patch(String method, String username, String id, String secretKey) {
-        tryGetNoteById(id);
+    public EncryptionResponse patch(NoteRequest noteRequest, String username, String id, String secretKey) {
+        Note note = tryGetNoteForUser(username, id);
 
         byte[] message = decryptNote(note, secretKey);
 
-        NoteRequest noteRequest = new NoteRequest();
-        noteRequest.setNoteDto(decryptedDto);
-        noteRequest.setMethod(method);
+        NoteRequest originalRequest = noteMapper.noteToRequest(note);
+        originalRequest.getNoteDto().setMessage(new String(message));
 
-        return saveRequest(noteRequest, username);
+        noteMapper.copyProperties(noteRequest, originalRequest);
+
+        return saveRequest(originalRequest, username);
+    }
+
+    private Note tryGetNoteForUser(String username, String id) {
+        Optional<Note> optionalNote = noteRepository.findByAuthorAndId(username, id);
+        return optionalNote.orElseThrow(
+                () -> new ResourceNotFoundException("No such note found for this user.")
+        );
+    }
+
+    @Override
+    public void delete(String id, String username) {
+        tryGetNoteForUser(username, id);
+        delete(id);
     }
 
     @Override
