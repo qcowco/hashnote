@@ -81,13 +81,20 @@ public class MessageEncrypterBuilderImpl implements MessageEncrypterBuilder {
             initVector(encryptionDetails.getVector());
 
         cipher();
+
         MessageEncrypterImpl messageEncrypter = new MessageEncrypterImpl(message, cipher, secretKey, initVector);
 
+        clean();
+
+        return messageEncrypter;
+    }
+
+    private void clean() {
+        algorithm = null;
+        encryptionDetails = null;
         cipher = null;
         message = null;
         secretKey = null;
-        initVector = null; // TODO: 25.02.2020 brzydkie, poprawic (ale dziala)
-
-        return messageEncrypter;
+        initVector = null;
     }
 }
