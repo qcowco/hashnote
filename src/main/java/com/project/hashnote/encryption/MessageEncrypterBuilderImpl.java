@@ -10,10 +10,11 @@ import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 
-@Component
+@Component(value = "prototype")
 public class MessageEncrypterBuilderImpl implements MessageEncrypterBuilder {
     private AlgorithmDetails algorithm;
     private EncryptionDetails encryptionDetails;
+
     private byte[] message;
     private Cipher cipher;
     private SecretKey secretKey;
