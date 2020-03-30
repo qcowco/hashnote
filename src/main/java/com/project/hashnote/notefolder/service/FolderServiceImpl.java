@@ -36,12 +36,12 @@ public class FolderServiceImpl implements FolderService {
 
     @Override
     public void delete(String folderId, String username) {
-        Folder folder = findFolderBy(username, folderId);
+        Folder folder = getFolderBy(username, folderId);
 
         folderRepository.delete(folder);
     }
 
-    private Folder findFolderBy(String username, String folderId) {
+    private Folder getFolderBy(String username, String folderId) {
         List<Folder> usersFolders = getFoldersBy(username);
 
         Optional<Folder> optionalFolder = usersFolders.stream()
@@ -54,7 +54,7 @@ public class FolderServiceImpl implements FolderService {
 
     @Override
     public void patch(String folderId, String folderName, String username) {
-        Folder folder = findFolderBy(username, folderId);
+        Folder folder = getFolderBy(username, folderId);
         folder.setName(folderName);
 
         folderRepository.save(folder);
@@ -62,7 +62,7 @@ public class FolderServiceImpl implements FolderService {
 
     @Override
     public void saveToFolder(NoteDto noteDto, String folderId, String username) {
-        Folder folder = findFolderBy(username, folderId);
+        Folder folder = getFolderBy(username, folderId);
 
         List<NoteDto> notes = folder.getNotes();
 
@@ -77,7 +77,7 @@ public class FolderServiceImpl implements FolderService {
 
     @Override
     public void removeFromFolder(String noteId, String folderId, String username) {
-        Folder folder = findFolderBy(username, folderId);
+        Folder folder = getFolderBy(username, folderId);
 
         List<NoteDto> notes = folder.getNotes();
 
@@ -105,5 +105,3 @@ public class FolderServiceImpl implements FolderService {
 
 
 }
-// TODO: 21.03.2020 jakis mapper moze co do message dtosow notek
-// TODO: 21.03.2020 przerzucic logike filtrowania ze strumyczkow na baze danych gdzie tylko mozna
