@@ -21,4 +21,6 @@ public @Data class NoteDto {
     private LocalDateTime createdAt;
     @JsonFormat(pattern = "yyyy/MM/dd HH:mm:ss")
     private LocalDateTime expiresAt;
+    private int keyVisits;
+    private int maxVisits;
 }

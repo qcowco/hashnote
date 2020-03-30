@@ -4,6 +4,7 @@ import com.project.hashnote.encryption.exceptions.IncorrectPrivateKeyException;
 import com.project.hashnote.encryption.exceptions.InvalidAlgorithmNameException;
 import com.project.hashnote.encryption.exceptions.MalformedPrivateKeyException;
 import com.project.hashnote.exceptions.ResourceNotFoundException;
+import com.project.hashnote.note.exception.UnlockLimitExceededException;
 import com.project.hashnote.security.exception.UnauthorizedAccessException;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -56,6 +57,11 @@ public class NoteExceptionController extends ResponseEntityExceptionHandler {
             MalformedPrivateKeyException.class, IllegalArgumentException.class, InvalidKeyException.class})
     public void handleInvalidUserInput(HttpServletResponse response) throws IOException {
         response.sendError(HttpStatus.BAD_REQUEST.value());
+    }
+
+    @ExceptionHandler(UnlockLimitExceededException.class)
+    public void handleForbiddenNoteAccess(HttpServletResponse response) throws IOException {
+        response.sendError(HttpStatus.FORBIDDEN.value());
     }
 
 }

@@ -19,7 +19,8 @@ public @Data class Note {
     private String author;
     private LocalDateTime createdAt;
     private LocalDateTime expiresAt;
-
+    private int keyVisits;
+    private int maxVisits;
 
     @Override
     public boolean equals(Object o) {

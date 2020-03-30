@@ -6,6 +6,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 
 @Getter
 @Setter
@@ -16,6 +18,8 @@ public class NoteRequest {
     private NoteDto noteDto;
     private String method;
     private int minutesToExpiration;
+    @Min(0)
+    private int maxVisits;
 
     public String getId() {
         return noteDto.getId();

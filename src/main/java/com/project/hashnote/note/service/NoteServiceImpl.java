@@ -96,14 +96,9 @@ public class NoteServiceImpl implements NoteService {
     public NoteDto getDecrypted(String id, String secretKey) {
         Note note = tryGetNoteById(id);
 
-        EncryptionDetails encodedDetails = encryptionMapper.noteAndKeyToEncryption(note, secretKey);
-        EncryptionDetails encryptedDetails = noteEncoder.decode(encodedDetails);
+        byte[] decryptedMessage = tryUnlockNote(secretKey, note);
 
-        byte[] decryptedMessage = noteEncrypter.decrypt(encryptedDetails);
-
-        note.setMessage(new String(decryptedMessage));
-
-        return noteMapper.noteToNoteDto(note);
+        return noteMapper.noteAndMessageToNoteDto(note, decryptedMessage);
     }
 
 
@@ -113,11 +108,43 @@ public class NoteServiceImpl implements NoteService {
         );
     }
 
+    private byte[] tryUnlockNote(String secretKey, Note note) {
+        isNoteUnlockable(note);
+
+        byte[] decryptedMessage = decryptNote(note, secretKey);
+
+        incrementNoteVisits(note);
+
+        return decryptedMessage;
+    }
+
+    private void isNoteUnlockable(Note note) {
+        if (note.getMaxVisits() > 0 && note.getKeyVisits() >= note.getMaxVisits())
+            throw new UnlockLimitExceededException("Note unlock limit exceeded.");
+    }
+
+    private byte[] decryptNote(Note note, String secretKey) {
+        EncryptionDetails encryptedDetails = getEncryptionDetails(note, secretKey);
+
+        return noteEncrypter.decrypt(encryptedDetails);
+    }
+
+    private EncryptionDetails getEncryptionDetails(Note note, String secretKey) {
+        EncryptionDetails encodedDetails = encryptionMapper.noteAndKeyToEncryption(note, secretKey);
+        return noteEncoder.decode(encodedDetails);
+    }
+
+    private void incrementNoteVisits(Note note) {
+        note.setKeyVisits(note.getKeyVisits() + 1);
+
+        noteRepository.save(note);
+    }
+
     @Override
     public String patch(String method, String username, String id, String secretKey) {
         tryGetNoteById(id);
 
-        NoteDto decryptedDto = getDecrypted(id, secretKey);
+        byte[] message = decryptNote(note, secretKey);
 
         NoteRequest noteRequest = new NoteRequest();
         noteRequest.setNoteDto(decryptedDto);
@@ -135,5 +162,11 @@ public class NoteServiceImpl implements NoteService {
     public List<NoteDto> findExpired() {
         List<Note> expiredNotes = noteRepository.findByExpiresAtBefore(LocalDateTime.now());
         return noteMapper.noteToNoteDtoList(expiredNotes);
+    }
+
+    @Override
+    public List<NoteDto> findLimited() {
+        List<Note> limitedNotes = noteRepository.findAllLimitedNotes();
+        return noteMapper.noteToNoteDtoList(limitedNotes);
     }
 }

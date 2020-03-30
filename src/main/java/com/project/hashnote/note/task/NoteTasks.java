@@ -24,9 +24,21 @@ public class NoteTasks {
     public void deleteExpiredNotes() {
         List<NoteDto> expiredNotes = noteService.findExpired();
 
-        for (NoteDto note: expiredNotes) {
-            noteService.delete(note.getId());
-            folderService.removeFromAll(note);
+        deleteAll(expiredNotes);
+    }
+
+    @Scheduled(cron = "${note.deleteSchedule.cron}")
+    public void deleteLimitedNotes() {
+        List<NoteDto> limitedNotes = noteService.findLimited();
+
+        deleteAll(limitedNotes);
+    }
+
+    private void deleteAll(List<NoteDto> noteDtos) {
+        for (NoteDto noteDto: noteDtos) {
+            noteService.delete(noteDto.getId());
+            folderService.removeFromAll(noteDto);
         }
     }
+
 }

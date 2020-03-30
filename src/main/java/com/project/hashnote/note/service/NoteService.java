@@ -14,4 +14,5 @@ public interface NoteService {
     String patch(String method, String username, String id, String secretKey);
     void delete(String id);
     List<NoteDto> findExpired();
+    List<NoteDto> findLimited();
 }
