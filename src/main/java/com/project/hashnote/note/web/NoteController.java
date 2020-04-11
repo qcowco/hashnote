@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/v1/notes")
@@ -47,12 +48,22 @@ public class NoteController {
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public EncryptionResponse save(@Valid @RequestBody NoteRequest noteRequest, @AuthenticationPrincipal UserDetails user) {
-        String username = "anon";
+        String username;
 
-        if (user != null)
+        if (isUserLogged(user)) {
             username = user.getUsername();
+        } else {
+            username = "anon";
+
+            if (noteRequest.getMinutesToExpiration() == 0 || noteRequest.getMinutesToExpiration() > 2880)
+                noteRequest.setMinutesToExpiration(2880);
+        }
 
         return noteService.save(noteRequest, username);
+    }
+
+    private boolean isUserLogged(UserDetails user) {
+        return Objects.nonNull(user);
     }
 
     @PatchMapping("/{id}/keys/{secretKey}")
