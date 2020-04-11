@@ -27,7 +27,6 @@ public class SecurityServiceImpl implements SecurityService {
         isAvailable(username);
 
         userRepository.save(new User(username, password));
-
     }
 
     private void isAvailable(String username) {
@@ -37,7 +36,6 @@ public class SecurityServiceImpl implements SecurityService {
 
     @Override
     public boolean userExists(String username) {
-        return userRepository.findByUsername(username)
-                .isPresent();
+        return userRepository.existsByUsername(username);
     }
 }
