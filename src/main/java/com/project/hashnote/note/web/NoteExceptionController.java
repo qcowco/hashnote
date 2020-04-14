@@ -50,14 +50,14 @@ public class NoteExceptionController extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)
-    public void handleUserNotFound(HttpServletResponse response) throws IOException {
-        response.sendError(HttpStatus.NOT_FOUND.value());
+    public void handleUserNotFound(HttpServletResponse response, RuntimeException exception) throws IOException {
+        response.sendError(HttpStatus.NOT_FOUND.value(), exception.getMessage());
     }
 
     @ExceptionHandler({IncorrectPrivateKeyException.class, InvalidAlgorithmNameException.class,
             MalformedPrivateKeyException.class, IllegalArgumentException.class, InvalidKeyException.class})
-    public void handleInvalidUserInput(HttpServletResponse response) throws IOException {
-        response.sendError(HttpStatus.BAD_REQUEST.value());
+    public void handleInvalidUserInput(HttpServletResponse response, RuntimeException exception) throws IOException {
+        response.sendError(HttpStatus.BAD_REQUEST.value(), exception.getMessage());
     }
 
     @ExceptionHandler({UnlockLimitExceededException.class, NoteExpiredException.class})
