@@ -133,7 +133,7 @@ public class NoteServiceImpl implements NoteService {
     }
 
     private void isExpired(Note note) {
-        if (note.getExpiresAt().isBefore(LocalDateTime.now()))
+        if (note.getExpiresAt() != null && note.getExpiresAt().isBefore(LocalDateTime.now()))
             throw new NoteExpiredException("Note expired at: " + note.getExpiresAt());
     }
 
