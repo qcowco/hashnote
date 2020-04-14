@@ -8,12 +8,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-public interface NoteRepository extends MongoRepository<Note, String> {
+public interface NoteRepository extends MongoRepository<Note, String>, CustomNoteRepository {
     void deleteById(String id);
     List<Note> findByAuthor(String username);
     List<Note> findByExpiresAtBefore(LocalDateTime now);
-    @Query("{$where: \"this.maxVisits > 0 && this.keyVisits >= this.maxVisits\"}")
-    List<Note> findAllLimitedNotes();
     Optional<Note> findByAuthorAndId(String username, String id);
     boolean existsById(String id);
 }
