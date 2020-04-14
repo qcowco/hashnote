@@ -1,6 +1,7 @@
 package com.project.hashnote.note.service;
 
 import com.project.hashnote.note.dto.EncryptionResponse;
+import com.project.hashnote.note.exception.NoteExpiredException;
 import com.project.hashnote.note.exception.UnlockLimitExceededException;
 import com.project.hashnote.note.mapper.EncryptionMapper;
 import com.project.hashnote.note.util.NoteEncoder;
@@ -122,8 +123,18 @@ public class NoteServiceImpl implements NoteService {
     }
 
     private void isNoteUnlockable(Note note) {
+        isLimitExceeded(note);
+        isExpired(note);
+    }
+
+    private void isLimitExceeded(Note note) {
         if (note.getMaxVisits() > 0 && note.getKeyVisits() >= note.getMaxVisits())
             throw new UnlockLimitExceededException("Note unlock limit exceeded.");
+    }
+
+    private void isExpired(Note note) {
+        if (note.getExpiresAt().isBefore(LocalDateTime.now()))
+            throw new NoteExpiredException("Note expired at: " + note.getExpiresAt());
     }
 
     private byte[] decryptNote(Note note, String secretKey) {
