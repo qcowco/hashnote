@@ -17,9 +17,9 @@ public interface NoteMapper {
     @Mapping(target = "message", ignore = true)
     @Mapping(target = "author", ignore = true)
     @Mapping(target = "encryptionDetails.method", source = "noteRequest.method")
-    @Mapping(target = "createdAt", expression = "java(java.time.LocalDateTime.now())")
+    @Mapping(target = "createdAt", expression = "java(java.time.LocalDateTime.now(java.time.ZoneId.of(\"Europe/Warsaw\")))")
     @Mapping(target = "expiresAt",
-            expression = "java(java.time.LocalDateTime.now().plusMinutes(noteRequest.getMinutesToExpiration()))")
+            expression = "java(java.time.LocalDateTime.now(java.time.ZoneId.of(\"Europe/Warsaw\")).plusMinutes(noteRequest.getMinutesToExpiration()))")
     @Mapping(target = "keyVisits", expression = "java(0)")
     Note requestToNote(NoteRequest noteRequest);
 
