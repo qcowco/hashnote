@@ -21,7 +21,6 @@ public interface NoteMapper {
     @Mapping(target = "expiresAt",
             expression = "java(java.time.LocalDateTime.now().plusMinutes(noteRequest.getMinutesToExpiration()))")
     @Mapping(target = "keyVisits", expression = "java(0)")
-    @Mapping(target = "maxVisits", source = "noteRequest.maxVisits")
     Note requestToNote(NoteRequest noteRequest);
 
     @AfterMapping
@@ -35,6 +34,7 @@ public interface NoteMapper {
     @Mapping(target = "noteDto", source = "note", qualifiedByName = "toDto")
     @Mapping(target = "minutesToExpiration",
             defaultExpression = "java(note.getExpiresAt().getMinutes() - note.getCreatedAt().getMinutes())")
+    @Mapping(target = "method", source = "encryptionDetails.method")
     NoteRequest noteToRequest(Note note);
 
     @Named("toDto")
@@ -53,7 +53,6 @@ public interface NoteMapper {
     @Mapping(ignore = true, target = "target.noteDto")
     @Mapping(source = "source.method", target = "target.method")
     @Mapping(source = "source.minutesToExpiration", target = "target.minutesToExpiration")
-    @Mapping(source = "source.maxVisits", target = "target.maxVisits")
     void copyProperties(NoteRequest source, @MappingTarget NoteRequest target);
 
     void copyNote(Note source, @MappingTarget Note target);
