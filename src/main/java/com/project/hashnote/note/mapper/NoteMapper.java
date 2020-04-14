@@ -25,7 +25,7 @@ public interface NoteMapper {
 
     @AfterMapping
     default void afterRequestMapping(@MappingTarget Note note, NoteRequest noteRequest) {
-        if (note.getCreatedAt().isEqual(note.getExpiresAt())) {
+        if (note.getCreatedAt().isEqual(note.getExpiresAt()) || note.getCreatedAt().isAfter(note.getExpiresAt())) {
             note.setExpiresAt(null);
         }
     }
