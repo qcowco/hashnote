@@ -21,8 +21,6 @@ public class NoteRequest {
     private String method;
     @Min(0)
     private int minutesToExpiration;
-    @Min(0)
-    private int maxVisits;
 
     public String getId() {
         return noteDto.getId();
