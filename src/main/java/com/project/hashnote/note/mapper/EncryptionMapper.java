@@ -19,6 +19,10 @@ public interface EncryptionMapper {
     @Mapping(ignore = true, target = "id")
     @Mapping(ignore = true, target = "name")
     @Mapping(ignore = true, target = "author")
+    @Mapping(ignore = true, target = "createdAt")
+    @Mapping(ignore = true, target = "expiresAt")
+    @Mapping(ignore = true, target = "keyVisits")
+    @Mapping(ignore = true, target = "maxVisits")
     void copyEncryptionDetails(EncryptionDetails source, @MappingTarget Note target);
 
     @Mapping(source = "note.message", target = "message", qualifiedByName = "toBytes")
