@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.util.StringUtils;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -32,5 +33,9 @@ public class NoteRequest {
 
     public boolean hasNoteId() {
         return noteDto.getId() != null;
+    }
+
+    public boolean hasMethod() {
+        return StringUtils.hasText(method);
     }
 }
