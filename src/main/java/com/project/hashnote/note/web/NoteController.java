@@ -55,11 +55,15 @@ public class NoteController {
         } else {
             username = "anon";
 
-            if (noteRequest.getMinutesToExpiration() == 0 || noteRequest.getMinutesToExpiration() > 2880)
-                noteRequest.setMinutesToExpiration(2880);
+            if (exceedsFreeTimeLimit(noteRequest))
+                noteRequest.setMinutesLeft(2880);
         }
 
         return noteService.save(noteRequest, username);
+    }
+
+    private boolean exceedsFreeTimeLimit(@RequestBody @Valid NoteRequest noteRequest) {
+        return noteRequest.getMinutesLeft() == 0 || noteRequest.getMinutesLeft() > 2880;
     }
 
     private boolean isUserLogged(UserDetails user) {
