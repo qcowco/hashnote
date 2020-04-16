@@ -6,6 +6,5 @@ import lombok.*;
 public @Data class EncryptionDetails {
     @NonNull
     private String vector;
-    @NonNull
     private String method;
 }
