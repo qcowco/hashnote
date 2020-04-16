@@ -3,12 +3,13 @@ package com.project.hashnote.note.dto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 import org.hibernate.validator.constraints.Length;
+import org.springframework.hateoas.RepresentationModel;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Null;
 import java.time.LocalDateTime;
 
-public @Data class NoteDto {
+public @Data class NoteDto extends RepresentationModel<NoteDto> {
     @Null
     private String id;
     @NotNull
