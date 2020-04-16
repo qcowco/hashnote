@@ -1,6 +1,6 @@
 package com.project.hashnote.note.service;
 
-import com.project.hashnote.note.dto.EncryptionResponse;
+import com.project.hashnote.note.dto.*;
 import com.project.hashnote.note.exception.NoteExpiredException;
 import com.project.hashnote.note.exception.UnlockLimitExceededException;
 import com.project.hashnote.note.mapper.EncryptionMapper;
@@ -8,9 +8,6 @@ import com.project.hashnote.note.util.NoteEncoder;
 import com.project.hashnote.note.util.NoteEncrypter;
 import com.project.hashnote.note.dao.NoteRepository;
 import com.project.hashnote.note.document.Note;
-import com.project.hashnote.note.dto.EncryptionDetails;
-import com.project.hashnote.note.dto.NoteDto;
-import com.project.hashnote.note.dto.NoteRequest;
 import com.project.hashnote.note.mapper.NoteMapper;
 import com.project.hashnote.exceptions.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,41 +37,29 @@ public class NoteServiceImpl implements NoteService {
 
     @Override
     public EncryptionResponse save(NoteRequest noteRequest, String username) {
-        hasUniqueId(noteRequest);
-
         return saveRequest(noteRequest, username);
     }
 
-    private void hasUniqueId(NoteRequest noteRequest) {
-        if(noteRequest.hasNoteId() && noteExists(noteRequest.getId()))
-            throw new IllegalArgumentException("There's already a note with that id.");
-    }
 
     private boolean noteExists(String id) {
         return noteRepository.existsById(id);
     }
 
     private EncryptionResponse saveRequest(NoteRequest noteRequest, String username) {
-        EncryptionDetails encryptionDetails = encryptRequest(noteRequest);
-        Note note = getNote(noteRequest, username);
+        Note note = noteMapper.requestToNote(noteRequest, username);
 
+        EncryptionDetails encryptionDetails = encryptRequest(noteRequest);
         encryptionMapper.copyEncryptionDetails(encryptionDetails, note);
 
+        return saveNote(encryptionDetails, note);
+    }
+
+    private EncryptionResponse saveNote(EncryptionDetails encryptionDetails, Note note) {
         Note persistedNote = noteRepository.save(note);
 
         return new EncryptionResponse(persistedNote.getId(), new String(encryptionDetails.getSecretKey()));
     }
 
-    private Note getNote(NoteRequest noteRequest, String username) {
-        Note noteDto = noteMapper.noteDtoToNote(noteRequest.getNoteDto());
-        Note note = noteMapper.requestToNote(noteRequest);
-
-        noteMapper.copyNote(noteDto, note);
-
-        note.setAuthor(username);
-
-        return note;
-    }
 
     private EncryptionDetails encryptRequest(NoteRequest noteRequest) {
         EncryptionDetails requestEncryption = encryptionMapper.getEncryptionDetails(noteRequest);
