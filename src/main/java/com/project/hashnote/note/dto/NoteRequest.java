@@ -6,7 +6,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.util.StringUtils;
 
-import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
@@ -16,24 +15,14 @@ import javax.validation.constraints.NotNull;
 @AllArgsConstructor
 public class NoteRequest {
     @NotNull
-    @Valid
-    private NoteDto noteDto;
+    private String name;
     @NotNull
+    private String message;
     private String method;
     @Min(0)
-    private int minutesToExpiration;
-
-    public String getId() {
-        return noteDto.getId();
-    }
-
-    public String getMessage() {
-        return noteDto.getMessage();
-    }
-
-    public boolean hasNoteId() {
-        return noteDto.getId() != null;
-    }
+    private int minutesLeft;
+    @Min(0)
+    private int maxVisits;
 
     public boolean hasMethod() {
         return StringUtils.hasText(method);
