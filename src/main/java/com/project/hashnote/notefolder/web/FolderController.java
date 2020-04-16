@@ -2,12 +2,14 @@ package com.project.hashnote.notefolder.web;
 
 import com.project.hashnote.note.dto.NoteDto;
 import com.project.hashnote.note.service.NoteService;
-import com.project.hashnote.notefolder.document.Folder;
+import com.project.hashnote.note.web.NoteController;
+import com.project.hashnote.notefolder.dto.FolderDto;
 import com.project.hashnote.notefolder.dto.FolderRequest;
 import com.project.hashnote.notefolder.dto.FolderResponse;
 import com.project.hashnote.notefolder.dto.NoteRequest;
 import com.project.hashnote.notefolder.service.FolderService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -29,8 +31,20 @@ public class FolderController {
     }
 
     @GetMapping
-    public List<Folder> getFoldersBy(@AuthenticationPrincipal UserDetails user) {
+    public List<FolderDto> getFoldersBy(@AuthenticationPrincipal UserDetails user) {
+        List<FolderDto> folderDtos = folderService.getFoldersBy(user.getUsername());
+
+        folderDtos.forEach(folderDto -> folderDto.getNotes().forEach(this::linkEncrypted));
+
         return folderService.getFoldersBy(user.getUsername());
+    }
+
+    private void linkEncrypted(NoteDto noteDto) {
+        noteDto.add(WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder
+                .methodOn(NoteController.class)
+                .getOne(noteDto.getId()))
+                .withRel("encrypted")
+        );
     }
 
     @ResponseStatus(HttpStatus.CREATED)
@@ -39,7 +53,19 @@ public class FolderController {
                                      @AuthenticationPrincipal UserDetails user) {
         String folderId = folderService.save(folderRequest, user.getUsername());
 
-        return new FolderResponse(folderId);
+        FolderResponse folderResponse = new FolderResponse(folderId);
+        linkFolders(folderResponse, user);
+
+        return folderResponse;
+    }
+
+    private void linkFolders(FolderResponse folderResponse, UserDetails user) {
+        folderResponse.add(WebMvcLinkBuilder
+                .linkTo(WebMvcLinkBuilder
+                        .methodOn(FolderController.class)
+                        .getFoldersBy(user))
+                .withRel("folders")
+        );
     }
 
     @DeleteMapping("/{folderId}")
