@@ -80,10 +80,10 @@ public class FolderController {
         folderService.patch(folderId, folderRequest.getName(), user.getUsername());
     }
 
-    @PostMapping("/{folderId}")
-    public void saveToFolder(@PathVariable String folderId, @RequestBody NoteRequest noteRequest,
+    @PostMapping("/{folderId}/notes/{noteId}")
+    public void saveToFolder(@PathVariable String folderId, @PathVariable String noteId,
                              @AuthenticationPrincipal UserDetails user) {
-        NoteDto noteDto = noteService.getEncrypted(noteRequest.getNoteId());
+        NoteDto noteDto = noteService.getEncrypted(noteId);
         folderService.saveToFolder(noteDto, folderId, user.getUsername());
     }
 
