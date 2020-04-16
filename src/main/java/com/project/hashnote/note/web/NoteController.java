@@ -3,6 +3,7 @@ package com.project.hashnote.note.web;
 import com.project.hashnote.note.dto.EncryptionResponse;
 import com.project.hashnote.note.dto.NoteDto;
 import com.project.hashnote.note.dto.NoteRequest;
+import com.project.hashnote.note.dto.PatchRequest;
 import com.project.hashnote.note.service.NoteService;
 import com.project.hashnote.notefolder.service.FolderService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,9 +72,9 @@ public class NoteController {
     }
 
     @PatchMapping("/{id}/keys/{secretKey}")
-    public EncryptionResponse patch(@Valid @RequestBody NoteRequest noteRequest, @AuthenticationPrincipal UserDetails user,
-                        @PathVariable String id, @PathVariable String secretKey){
-        return noteService.patch(noteRequest, user.getUsername(), id, secretKey);
+    public EncryptionResponse patch(@Valid @RequestBody PatchRequest patchRequest, @AuthenticationPrincipal UserDetails user,
+                                    @PathVariable String id, @PathVariable String secretKey){
+        return noteService.patch(patchRequest, user.getUsername(), id, secretKey);
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
