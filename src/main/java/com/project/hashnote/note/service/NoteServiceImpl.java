@@ -48,10 +48,17 @@ public class NoteServiceImpl implements NoteService {
     private EncryptionResponse saveRequest(NoteRequest noteRequest, String username) {
         Note note = noteMapper.requestToNote(noteRequest, username);
 
-        EncryptionDetails encryptionDetails = encryptRequest(noteRequest);
-        encryptionMapper.copyEncryptionDetails(encryptionDetails, note);
+        EncryptionResponse encryptionResponse;
 
-        return saveNote(encryptionDetails, note);
+        if (noteRequest.hasMethod()){
+            EncryptionDetails encryptionDetails = encryptRequest(noteRequest);
+            encryptionMapper.copyEncryptionDetails(encryptionDetails, note);
+
+            encryptionResponse = saveNote(encryptionDetails, note);
+        } else
+            encryptionResponse = saveNote(note);
+
+        return encryptionResponse;
     }
 
     private EncryptionResponse saveNote(EncryptionDetails encryptionDetails, Note note) {
@@ -60,6 +67,11 @@ public class NoteServiceImpl implements NoteService {
         return new EncryptionResponse(persistedNote.getId(), new String(encryptionDetails.getSecretKey()));
     }
 
+    private EncryptionResponse saveNote(Note note) {
+        Note persistedNote = noteRepository.save(note);
+
+        return new EncryptionResponse(persistedNote.getId(), "");
+    }
 
     private EncryptionDetails encryptRequest(NoteRequest noteRequest) {
         EncryptionDetails requestEncryption = encryptionMapper.getEncryptionDetails(noteRequest);
