@@ -4,6 +4,7 @@ import com.project.hashnote.exceptions.ResourceNotFoundException;
 import com.project.hashnote.note.dto.NoteDto;
 import com.project.hashnote.notefolder.dao.FolderRepository;
 import com.project.hashnote.notefolder.document.Folder;
+import com.project.hashnote.notefolder.dto.FolderDto;
 import com.project.hashnote.notefolder.dto.FolderRequest;
 import com.project.hashnote.notefolder.mapper.FolderMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,8 +31,10 @@ public class FolderServiceImpl implements FolderService {
     }
 
     @Override
-    public List<Folder> getFoldersBy(String username) {
-        return folderRepository.findByAuthor(username);
+    public List<FolderDto> getFoldersBy(String username) {
+        List<Folder> folders = folderRepository.findByAuthor(username);
+
+        return folderMapper.folderToFolderDtoList(folders);
     }
 
     @Override
@@ -42,7 +45,7 @@ public class FolderServiceImpl implements FolderService {
     }
 
     private Folder getFolderBy(String username, String folderId) {
-        List<Folder> usersFolders = getFoldersBy(username);
+        List<Folder> usersFolders = folderRepository.findByAuthor(username);
 
         Optional<Folder> optionalFolder = usersFolders.stream()
                 .filter(folder -> folder.getId().equals(folderId))
