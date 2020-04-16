@@ -7,6 +7,7 @@ import com.project.hashnote.note.dto.PatchRequest;
 import com.project.hashnote.note.service.NoteService;
 import com.project.hashnote.notefolder.service.FolderService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -14,7 +15,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Objects;
 
@@ -33,17 +33,54 @@ public class NoteController {
 
     @GetMapping
     public List<NoteDto> getAll(@AuthenticationPrincipal UserDetails user){
-        return noteService.getAllBy(user.getUsername());
+        List<NoteDto> noteDtos = noteService.getAllBy(user.getUsername());
+
+        noteDtos.forEach(this::linkEncryptedNoteAsSelf);
+
+        return noteDtos;
+    }
+
+    private void linkEncryptedNoteAsSelf(NoteDto noteDto) {
+        noteDto.add(WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder
+                .methodOn(NoteController.class)
+                .getOne(noteDto.getId()))
+                .withSelfRel()
+        );
     }
 
     @GetMapping("/{id}")
     public NoteDto getOne(@PathVariable String id){
-        return noteService.getEncrypted(id);
+        NoteDto noteDto = noteService.getEncrypted(id);
+
+        linkEncryptedNoteAsSelf(noteDto);
+
+        return noteDto;
     }
 
     @GetMapping("/{id}/keys/{key}")
     public NoteDto getOneDecrypted(@PathVariable String id, @PathVariable String key) {
-        return noteService.getDecrypted(id, key);
+        NoteDto noteDto = noteService.getDecrypted(id, key);
+
+        linkEncryptedNote(noteDto);
+        linkDecryptedNoteAsSelf(noteDto, key);
+
+        return noteDto;
+    }
+
+    private void linkEncryptedNote(NoteDto noteDto) {
+        noteDto.add(WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder
+                .methodOn(NoteController.class)
+                .getOne(noteDto.getId()))
+                .withRel("encrypted")
+        );
+    }
+
+    private void linkDecryptedNoteAsSelf(NoteDto noteDto, String key) {
+        noteDto.add(WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder
+                .methodOn(NoteController.class)
+                .getOneDecrypted(noteDto.getId(), key))
+                .withSelfRel()
+        );
     }
 
     @ResponseStatus(HttpStatus.CREATED)
@@ -60,7 +97,29 @@ public class NoteController {
                 noteRequest.setMinutesLeft(2880);
         }
 
-        return noteService.save(noteRequest, username);
+        EncryptionResponse response = noteService.save(noteRequest, username);
+
+        if (response.hasSecretKey())
+            linkDecryptedNote(response);
+        linkEncryptedNote(response);
+
+        return response;
+    }
+
+    private void linkDecryptedNote(EncryptionResponse response) {
+        response.add(WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder
+                .methodOn(NoteController.class)
+                .getOneDecrypted(response.getNoteId(), response.getSecretKey()))
+                .withRel("decrypted")
+        );
+    }
+
+    private void linkEncryptedNote(EncryptionResponse response) {
+        response.add(WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder
+                .methodOn(NoteController.class)
+                .getOne(response.getNoteId()))
+                .withRel("encrypted")
+        );
     }
 
     private boolean exceedsFreeTimeLimit(@RequestBody @Valid NoteRequest noteRequest) {
@@ -74,7 +133,12 @@ public class NoteController {
     @PatchMapping("/{id}/keys/{secretKey}")
     public EncryptionResponse patch(@Valid @RequestBody PatchRequest patchRequest, @AuthenticationPrincipal UserDetails user,
                                     @PathVariable String id, @PathVariable String secretKey){
-        return noteService.patch(patchRequest, user.getUsername(), id, secretKey);
+        EncryptionResponse response = noteService.patch(patchRequest, user.getUsername(), id, secretKey);
+
+        linkDecryptedNote(response);
+        linkEncryptedNote(response);
+
+        return response;
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
