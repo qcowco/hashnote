@@ -152,17 +152,31 @@ public class NoteServiceImpl implements NoteService {
     }
 
     @Override
-    public EncryptionResponse patch(NoteRequest noteRequest, String username, String id, String secretKey) {
+    public EncryptionResponse patch(PatchRequest patchRequest, String username, String id, String secretKey) {
         Note note = tryGetNoteForUser(username, id);
 
-        byte[] message = decryptNote(note, secretKey);
+        NoteRequest noteRequest = getRequest(note, secretKey);
+        // TODO: 15.04.2020 split into methods, cleanup
+        // TODO: 15.04.2020 make reencryption optional
+        noteMapper.copyProperties(patchRequest, noteRequest);
 
+        EncryptionDetails patchDetails = encryptRequest(noteRequest);
+
+        Note patchedNote = noteMapper.requestToNote(noteRequest, username);
+        patchedNote.setId(note.getId());
+        encryptionMapper.copyEncryptionDetails(patchDetails, patchedNote);
+        Note persistedNote = noteRepository.save(patchedNote);
+
+        return new EncryptionResponse(persistedNote.getId(), new String(patchDetails.getSecretKey()));
+    }
+
+    private NoteRequest getRequest(Note note, String secretKey) {
         NoteRequest originalRequest = noteMapper.noteToRequest(note);
-        originalRequest.getNoteDto().setMessage(new String(message));
 
-        noteMapper.copyProperties(noteRequest, originalRequest);
+        byte[] message = decryptNote(note, secretKey);
+        originalRequest.setMessage(new String(message));
 
-        return saveRequest(originalRequest, username);
+        return originalRequest;
     }
 
     private Note tryGetNoteForUser(String username, String id) {
