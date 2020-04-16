@@ -9,7 +9,7 @@ import org.mapstruct.*;
         uses = StringBytesMapper.class)
 public interface EncryptionMapper {
 
-    @Mapping(source = "noteDto.message", target = "message", qualifiedByName = "toBytes")
+    @Mapping(source = "message", target = "message", qualifiedByName = "toBytes")
     @Mapping(ignore = true, target = "secretKey")
     @Mapping(ignore = true, target = "vector")
     EncryptionDetails getEncryptionDetails(NoteRequest request);

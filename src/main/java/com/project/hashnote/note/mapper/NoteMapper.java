@@ -3,7 +3,7 @@ package com.project.hashnote.note.mapper;
 import com.project.hashnote.note.document.Note;
 import com.project.hashnote.note.dto.NoteDto;
 import com.project.hashnote.note.dto.NoteRequest;
-import jdk.jfr.Name;
+import com.project.hashnote.note.dto.PatchRequest;
 import org.mapstruct.*;
 
 import java.util.List;
@@ -11,28 +11,22 @@ import java.util.List;
 @Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
         uses = StringBytesMapper.class)
 public interface NoteMapper {
-    @Named("fromDto")
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "name", ignore = true)
-    @Mapping(target = "message", ignore = true)
-    @Mapping(target = "author", ignore = true)
-    @Mapping(target = "encryptionDetails.method", source = "noteRequest.method")
     @Mapping(target = "createdAt", expression = "java(java.time.LocalDateTime.now(java.time.ZoneId.of(\"Europe/Warsaw\")))")
     @Mapping(target = "expiresAt",
-            expression = "java(java.time.LocalDateTime.now(java.time.ZoneId.of(\"Europe/Warsaw\")).plusMinutes(noteRequest.getMinutesToExpiration()))")
-    @Mapping(target = "keyVisits", expression = "java(0)")
-    Note requestToNote(NoteRequest noteRequest);
+            expression = "java(java.time.LocalDateTime.now(java.time.ZoneId.of(\"Europe/Warsaw\")).plusMinutes(noteRequest.getMinutesLeft()))")
+    @Mapping(target = "encryptionDetails.method", source = "noteRequest.method")
+    Note requestToNote(NoteRequest noteRequest, String author);
 
     @AfterMapping
-    default void afterRequestMapping(@MappingTarget Note note, NoteRequest noteRequest) {
-        if (note.getCreatedAt().isEqual(note.getExpiresAt()) || note.getCreatedAt().isAfter(note.getExpiresAt())) {
+    default void afterRequestMapping(@MappingTarget Note note, NoteRequest noteRequest, String author) {
+        if (note.getCreatedAt().isEqual(note.getExpiresAt()) ||
+                note.getExpiresAt().isBefore(note.getExpiresAt().plusSeconds(10))) {
             note.setExpiresAt(null);
         }
     }
 
     @InheritInverseConfiguration
-    @Mapping(target = "noteDto", source = "note", qualifiedByName = "toDto")
-    @Mapping(target = "minutesToExpiration",
+    @Mapping(target = "minutesLeft",
             defaultExpression = "java(note.getExpiresAt().getMinutes() - note.getCreatedAt().getMinutes())")
     @Mapping(target = "method", source = "encryptionDetails.method")
     NoteRequest noteToRequest(Note note);
@@ -40,7 +34,7 @@ public interface NoteMapper {
     @Named("toDto")
     NoteDto noteToNoteDto(Note note);
 
-    @Name("toEntity")
+    @Named("toEntity")
     @InheritInverseConfiguration
     Note noteDtoToNote(NoteDto noteDto);
 
@@ -50,10 +44,7 @@ public interface NoteMapper {
     @IterableMapping(qualifiedByName = "toDto")
     List<NoteDto> noteToNoteDtoList(List<Note> notes);
 
-    @Mapping(ignore = true, target = "target.noteDto")
-    @Mapping(source = "source.method", target = "target.method")
-    @Mapping(source = "source.minutesToExpiration", target = "target.minutesToExpiration")
-    void copyProperties(NoteRequest source, @MappingTarget NoteRequest target);
+    void copyProperties(PatchRequest source, @MappingTarget NoteRequest target);
 
     void copyNote(Note source, @MappingTarget Note target);
 
