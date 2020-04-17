@@ -13,37 +13,35 @@ import javax.crypto.spec.IvParameterSpec;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 
-@NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
 @Setter(value = AccessLevel.PACKAGE)
-@Component
 public class MessageEncrypterImpl implements MessageEncrypter {
     private byte[] message;
     private Cipher cipher;
     private SecretKey secretKey;
     private IvParameterSpec initVector;
 
-    public void encrypt(byte[] message) {
+    public void encrypt() {
         trySetCipherMode(Cipher.ENCRYPT_MODE);
-        this.message = tryEncrypt(message);
+        this.message = tryEncrypt();
     }
 
-    private byte[] tryEncrypt(byte[] plainMessage) {
+    private byte[] tryEncrypt() {
         try {
-            return executeAlgorithmFor(plainMessage);
+            return executeAlgorithm();
         } catch (IllegalBlockSizeException | BadPaddingException e) {
             throw new IllegalStateException("Internal error.", e);
         }
     }
 
-    public void decrypt(byte[] encryptedMessage) {
+    public void decrypt() {
         trySetCipherMode(Cipher.DECRYPT_MODE);
-        message = tryDecrypt(encryptedMessage);
+        message = tryDecrypt();
     }
 
-    private byte[] tryDecrypt(byte[] encryptedMessage) {
+    private byte[] tryDecrypt() {
         try {
-            return executeAlgorithmFor(encryptedMessage);
+            return executeAlgorithm();
         } catch (BadPaddingException | IllegalBlockSizeException e) {
             throw new IncorrectPrivateKeyException("The provided key was incorrect", e);
         }
@@ -61,7 +59,7 @@ public class MessageEncrypterImpl implements MessageEncrypter {
         cipher.init(operationMode, secretKey, initVector);
     }
 
-    private byte[] executeAlgorithmFor(byte[] message) throws IllegalBlockSizeException, BadPaddingException{
+    private byte[] executeAlgorithm() throws IllegalBlockSizeException, BadPaddingException{
         return cipher.doFinal(message);
     }
 

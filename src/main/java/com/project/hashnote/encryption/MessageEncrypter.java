@@ -4,7 +4,7 @@ import com.project.hashnote.encryption.exceptions.IncorrectPrivateKeyException;
 import com.project.hashnote.note.dto.EncryptionDetails;
 
 public interface MessageEncrypter {
-    void encrypt(byte[] message);
-    void decrypt(byte[] message) throws IncorrectPrivateKeyException;
+    void encrypt();
+    void decrypt() throws IncorrectPrivateKeyException;
     EncryptionDetails getEncryptionDetails();
 }
