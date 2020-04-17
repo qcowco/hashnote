@@ -52,7 +52,7 @@ public class NoteServiceImpl implements NoteService {
 
         if (noteRequest.hasMethod()){
             EncryptionDetails encryptionDetails = encryptRequest(noteRequest);
-            encryptionMapper.copyEncryptionDetails(encryptionDetails, note);
+            encryptionMapper.applyEncryption(encryptionDetails, note);
 
             encryptionResponse = saveNote(encryptionDetails, note);
         } else
@@ -164,7 +164,7 @@ public class NoteServiceImpl implements NoteService {
 
         Note patchedNote = noteMapper.requestToNote(noteRequest, username);
         patchedNote.setId(note.getId());
-        encryptionMapper.copyEncryptionDetails(patchDetails, patchedNote);
+        encryptionMapper.applyEncryption(patchDetails, patchedNote);
         Note persistedNote = noteRepository.save(patchedNote);
 
         return new EncryptionResponse(persistedNote.getId(), new String(patchDetails.getSecretKey()));
