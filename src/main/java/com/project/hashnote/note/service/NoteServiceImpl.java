@@ -70,7 +70,7 @@ public class NoteServiceImpl implements NoteService {
     private EncryptionResponse saveNote(Note note) {
         Note persistedNote = noteRepository.save(note);
 
-        return new EncryptionResponse(persistedNote.getId(), "");
+        return new EncryptionResponse(persistedNote.getId());
     }
 
     private EncryptionDetails encryptRequest(NoteRequest noteRequest) {
