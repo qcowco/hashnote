@@ -98,11 +98,15 @@ public class NoteController {
 
         EncryptionResponse response = noteService.save(noteRequest, username);
 
+        addLinks(response);
+
+        return response;
+    }
+
+    private void addLinks(EncryptionResponse response) {
         if (response.hasSecretKey())
             linkDecryptedNote(response);
         linkEncryptedNote(response);
-
-        return response;
     }
 
     private void linkDecryptedNote(EncryptionResponse response) {
@@ -134,8 +138,7 @@ public class NoteController {
                                     @PathVariable String id, @PathVariable String secretKey){
         EncryptionResponse response = noteService.patch(noteRequest, user.getUsername(), id, secretKey);
 
-        linkDecryptedNote(response);
-        linkEncryptedNote(response);
+        addLinks(response);
 
         return response;
     }
