@@ -1,8 +1,10 @@
 package com.project.hashnote.note.util;
 
+import com.project.hashnote.note.document.Note;
 import com.project.hashnote.note.dto.EncryptionDetails;
+import com.project.hashnote.note.dto.NoteRequest;
 
 public interface NoteEncrypter {
-    EncryptionDetails encrypt(EncryptionDetails request);
-    byte[] decrypt(EncryptionDetails encryptionDetails);
+    EncryptionDetails encrypt(NoteRequest noteRequest);
+    byte[] decrypt(Note note, String secretKey);
 }

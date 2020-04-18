@@ -4,7 +4,6 @@ import com.project.hashnote.note.dto.*;
 import com.project.hashnote.note.exception.NoteExpiredException;
 import com.project.hashnote.note.exception.UnlockLimitExceededException;
 import com.project.hashnote.note.mapper.EncryptionMapper;
-import com.project.hashnote.note.util.NoteEncoder;
 import com.project.hashnote.note.util.NoteEncrypter;
 import com.project.hashnote.note.dao.NoteRepository;
 import com.project.hashnote.note.document.Note;
@@ -19,16 +18,14 @@ import java.util.Optional;
 
 @Service
 public class NoteServiceImpl implements NoteService {
-    private NoteEncoder noteEncoder;
     private NoteEncrypter noteEncrypter;
     private NoteRepository noteRepository;
     private NoteMapper noteMapper;
     private EncryptionMapper encryptionMapper;
 
     @Autowired
-    public NoteServiceImpl(NoteEncoder noteEncoder, NoteEncrypter noteEncrypter, NoteRepository noteRepository,
+    public NoteServiceImpl(NoteEncrypter noteEncrypter, NoteRepository noteRepository,
                            NoteMapper noteMapper, EncryptionMapper encryptionMapper) {
-        this.noteEncoder = noteEncoder;
         this.noteEncrypter = noteEncrypter;
         this.noteRepository = noteRepository;
         this.noteMapper = noteMapper;
@@ -40,18 +37,13 @@ public class NoteServiceImpl implements NoteService {
         return saveRequest(noteRequest, username);
     }
 
-
-    private boolean noteExists(String id) {
-        return noteRepository.existsById(id);
-    }
-
     private EncryptionResponse saveRequest(NoteRequest noteRequest, String username) {
         Note note = noteMapper.requestToNote(noteRequest, username);
 
         EncryptionResponse encryptionResponse;
 
         if (noteRequest.hasMethod()){
-            EncryptionDetails encryptionDetails = encryptRequest(noteRequest);
+            EncryptionDetails encryptionDetails = noteEncrypter.encrypt(noteRequest);
             encryptionMapper.applyEncryption(encryptionDetails, note);
 
             encryptionResponse = saveNote(encryptionDetails, note);
@@ -71,13 +63,6 @@ public class NoteServiceImpl implements NoteService {
         Note persistedNote = noteRepository.save(note);
 
         return new EncryptionResponse(persistedNote.getId());
-    }
-
-    private EncryptionDetails encryptRequest(NoteRequest noteRequest) {
-        EncryptionDetails requestEncryption = encryptionMapper.getEncryptionDetails(noteRequest);
-        EncryptionDetails resultEncryption = noteEncrypter.encrypt(requestEncryption);
-
-        return noteEncoder.encode(resultEncryption);
     }
 
     @Override
@@ -112,7 +97,7 @@ public class NoteServiceImpl implements NoteService {
     private byte[] tryUnlockNote(String secretKey, Note note) {
         isNoteUnlockable(note);
 
-        byte[] decryptedMessage = decryptNote(note, secretKey);
+        byte[] decryptedMessage = noteEncrypter.decrypt(note, secretKey);
 
         incrementNoteVisits(note);
 
@@ -134,17 +119,6 @@ public class NoteServiceImpl implements NoteService {
             throw new NoteExpiredException("Note expired at: " + note.getExpiresAt());
     }
 
-    private byte[] decryptNote(Note note, String secretKey) {
-        EncryptionDetails encryptedDetails = getEncryptionDetails(note, secretKey);
-
-        return noteEncrypter.decrypt(encryptedDetails);
-    }
-
-    private EncryptionDetails getEncryptionDetails(Note note, String secretKey) {
-        EncryptionDetails encodedDetails = encryptionMapper.noteAndKeyToEncryption(note, secretKey);
-        return noteEncoder.decode(encodedDetails);
-    }
-
     private void incrementNoteVisits(Note note) {
         note.setKeyVisits(note.getKeyVisits() + 1);
 
@@ -160,7 +134,7 @@ public class NoteServiceImpl implements NoteService {
         // TODO: 15.04.2020 make reencryption optional
         noteMapper.copyProperties(patchRequest, noteRequest);
 
-        EncryptionDetails patchDetails = encryptRequest(noteRequest);
+        EncryptionDetails patchDetails = noteEncrypter.encrypt(noteRequest);
 
         Note patchedNote = noteMapper.requestToNote(noteRequest, username);
         patchedNote.setId(note.getId());
@@ -173,7 +147,7 @@ public class NoteServiceImpl implements NoteService {
     private NoteRequest getRequest(Note note, String secretKey) {
         NoteRequest originalRequest = noteMapper.noteToRequest(note);
 
-        byte[] message = decryptNote(note, secretKey);
+        byte[] message = noteEncrypter.decrypt(note, secretKey);
         originalRequest.setMessage(new String(message));
 
         return originalRequest;
