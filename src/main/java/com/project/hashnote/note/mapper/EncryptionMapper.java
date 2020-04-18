@@ -16,6 +16,7 @@ public interface EncryptionMapper {
 
     @Mapping(source = "message", target = "message", qualifiedByName = "toString")
     @Mapping(source = "vector", target = "encryptionDetails.vector", qualifiedByName = "toString")
+    @Mapping(source = "method", target = "encryptionDetails.method")
     @Mapping(ignore = true, target = "id")
     @Mapping(ignore = true, target = "name")
     @Mapping(ignore = true, target = "author")
