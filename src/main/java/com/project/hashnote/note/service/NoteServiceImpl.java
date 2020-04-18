@@ -43,20 +43,20 @@ public class NoteServiceImpl implements NoteService {
         EncryptionResponse encryptionResponse;
 
         if (noteRequest.hasMethod()){
-            EncryptionDetails encryptionDetails = noteEncrypter.encrypt(noteRequest);
-            encryptionMapper.applyEncryption(encryptionDetails, note);
+            EncryptionCredentials encryptionCredentials = noteEncrypter.encrypt(noteRequest);
+            encryptionMapper.applyEncryption(encryptionCredentials, note);
 
-            encryptionResponse = saveNote(encryptionDetails, note);
+            encryptionResponse = saveNote(encryptionCredentials, note);
         } else
             encryptionResponse = saveNote(note);
 
         return encryptionResponse;
     }
 
-    private EncryptionResponse saveNote(EncryptionDetails encryptionDetails, Note note) {
+    private EncryptionResponse saveNote(EncryptionCredentials encryptionCredentials, Note note) {
         Note persistedNote = noteRepository.save(note);
 
-        return new EncryptionResponse(persistedNote.getId(), new String(encryptionDetails.getSecretKey()));
+        return new EncryptionResponse(persistedNote.getId(), new String(encryptionCredentials.getSecretKey()));
     }
 
     private EncryptionResponse saveNote(Note note) {

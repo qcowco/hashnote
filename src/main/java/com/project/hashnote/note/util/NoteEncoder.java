@@ -1,8 +1,8 @@
 package com.project.hashnote.note.util;
 
-import com.project.hashnote.note.dto.EncryptionDetails;
+import com.project.hashnote.note.dto.EncryptionCredentials;
 
 public interface NoteEncoder {
-    EncryptionDetails encode(EncryptionDetails result);
-    EncryptionDetails decode(EncryptionDetails encoded);
+    EncryptionCredentials encode(EncryptionCredentials result);
+    EncryptionCredentials decode(EncryptionCredentials encoded);
 }

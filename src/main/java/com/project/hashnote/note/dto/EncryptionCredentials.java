@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class EncryptionDetails {
+public class EncryptionCredentials {
     private byte[] message;
     private byte[] secretKey;
     private byte[] vector;

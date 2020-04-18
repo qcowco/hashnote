@@ -3,7 +3,7 @@ package com.project.hashnote.encryption;
 import com.project.hashnote.encryption.algorithms.AlgorithmDetails;
 import com.project.hashnote.encryption.exceptions.MalformedPrivateKeyException;
 import com.project.hashnote.encryption.exceptions.MalformedVectorException;
-import com.project.hashnote.note.dto.EncryptionDetails;
+import com.project.hashnote.note.dto.EncryptionCredentials;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.Cipher;
@@ -13,7 +13,7 @@ import javax.crypto.spec.IvParameterSpec;
 @Component(value = "prototype")
 public class MessageEncrypterBuilderImpl implements MessageEncrypterBuilder {
     private AlgorithmDetails algorithm;
-    private EncryptionDetails encryptionDetails;
+    private EncryptionCredentials encryptionCredentials;
 
     private byte[] message;
     private Cipher cipher;
@@ -27,8 +27,8 @@ public class MessageEncrypterBuilderImpl implements MessageEncrypterBuilder {
     }
 
     @Override
-    public MessageEncrypterBuilder encryptionDetails(EncryptionDetails encryptionDetails) {
-        this.encryptionDetails = encryptionDetails;
+    public MessageEncrypterBuilder encryptionCredentials(EncryptionCredentials encryptionCredentials) {
+        this.encryptionCredentials = encryptionCredentials;
 
         return this;
     }
@@ -68,17 +68,17 @@ public class MessageEncrypterBuilderImpl implements MessageEncrypterBuilder {
 
     @Override
     public MessageEncrypter build() {
-        message = encryptionDetails.getMessage();
+        message = encryptionCredentials.getMessage();
 
-        if(encryptionDetails.getSecretKey() == null)
+        if(encryptionCredentials.getSecretKey() == null)
             secretKey();
         else
-            secretKey(encryptionDetails.getSecretKey());
+            secretKey(encryptionCredentials.getSecretKey());
 
-        if(encryptionDetails.getVector() == null)
+        if(encryptionCredentials.getVector() == null)
             initVector();
         else
-            initVector(encryptionDetails.getVector());
+            initVector(encryptionCredentials.getVector());
 
         cipher();
 
@@ -91,7 +91,7 @@ public class MessageEncrypterBuilderImpl implements MessageEncrypterBuilder {
 
     private void clean() {
         algorithm = null;
-        encryptionDetails = null;
+        encryptionCredentials = null;
         cipher = null;
         message = null;
         secretKey = null;

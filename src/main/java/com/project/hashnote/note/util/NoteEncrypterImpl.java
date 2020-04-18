@@ -5,7 +5,7 @@ import com.project.hashnote.encryption.MessageEncrypterBuilder;
 import com.project.hashnote.encryption.algorithms.AlgorithmDetails;
 import com.project.hashnote.encryption.exceptions.InvalidAlgorithmNameException;
 import com.project.hashnote.note.document.Note;
-import com.project.hashnote.note.dto.EncryptionDetails;
+import com.project.hashnote.note.dto.EncryptionCredentials;
 import com.project.hashnote.note.dto.NoteRequest;
 import com.project.hashnote.note.mapper.EncryptionMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,23 +30,23 @@ public class NoteEncrypterImpl implements NoteEncrypter {
     }
 
     @Override
-    public EncryptionDetails encrypt(NoteRequest noteRequest) {
-        EncryptionDetails encryptionDetails = encryptionMapper.getEncryptionDetails(noteRequest);
+    public EncryptionCredentials encrypt(NoteRequest noteRequest) {
+        EncryptionCredentials encryptionCredentials = encryptionMapper.getEncryptionDetails(noteRequest);
 
-        MessageEncrypter messageEncrypter = buildEncrypterFor(encryptionDetails);
+        MessageEncrypter messageEncrypter = buildEncrypterFor(encryptionCredentials);
 
         messageEncrypter.encrypt();
 
-        EncryptionDetails result = messageEncrypter.getEncryptionDetails();
+        EncryptionCredentials result = messageEncrypter.getEncryptionCredentials();
 
         return noteEncoder.encode(result);
     }
 
-    private MessageEncrypter buildEncrypterFor(EncryptionDetails encryptionDetails){
-        AlgorithmDetails algorithmDetails = tryGetAlgorithm(encryptionDetails.getMethod());
+    private MessageEncrypter buildEncrypterFor(EncryptionCredentials encryptionCredentials){
+        AlgorithmDetails algorithmDetails = tryGetAlgorithm(encryptionCredentials.getMethod());
 
         builder.algorithmDetails(algorithmDetails);
-        builder.encryptionDetails(encryptionDetails);
+        builder.encryptionCredentials(encryptionCredentials);
 
         return builder.build();
     }
@@ -62,14 +62,14 @@ public class NoteEncrypterImpl implements NoteEncrypter {
 
     @Override
     public byte[] decrypt(Note note, String secretKey) {
-        EncryptionDetails encodedDetails = encryptionMapper.noteAndKeyToEncryption(note, secretKey);
+        EncryptionCredentials encodedDetails = encryptionMapper.noteAndKeyToEncryption(note, secretKey);
 
-        EncryptionDetails decodedDetails = noteEncoder.decode(encodedDetails);
+        EncryptionCredentials decodedDetails = noteEncoder.decode(encodedDetails);
 
         MessageEncrypter messageEncrypter = buildEncrypterFor(decodedDetails);
 
         messageEncrypter.decrypt();
 
-        return messageEncrypter.getEncryptionDetails().getMessage();
+        return messageEncrypter.getEncryptionCredentials().getMessage();
     }
 }

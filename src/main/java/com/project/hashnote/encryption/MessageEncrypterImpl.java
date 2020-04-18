@@ -1,12 +1,10 @@
 package com.project.hashnote.encryption;
 
 import com.project.hashnote.encryption.exceptions.*;
-import com.project.hashnote.note.dto.EncryptionDetails;
+import com.project.hashnote.note.dto.EncryptionCredentials;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.stereotype.Component;
 
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
@@ -63,15 +61,15 @@ public class MessageEncrypterImpl implements MessageEncrypter {
         return cipher.doFinal(message);
     }
 
-    public EncryptionDetails getEncryptionDetails() {
-        EncryptionDetails encryptionDetails = new EncryptionDetails();
+    public EncryptionCredentials getEncryptionCredentials() {
+        EncryptionCredentials encryptionCredentials = new EncryptionCredentials();
 
-        encryptionDetails.setMessage(message);
-        encryptionDetails.setSecretKey(getSecretKey());
-        encryptionDetails.setVector(getInitVector());
-        encryptionDetails.setMethod(getMethod());
+        encryptionCredentials.setMessage(message);
+        encryptionCredentials.setSecretKey(getSecretKey());
+        encryptionCredentials.setVector(getInitVector());
+        encryptionCredentials.setMethod(getMethod());
 
-        return encryptionDetails;
+        return encryptionCredentials;
     }
 
     private byte[] getSecretKey(){
