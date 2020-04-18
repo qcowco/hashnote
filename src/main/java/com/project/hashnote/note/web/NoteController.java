@@ -49,7 +49,7 @@ public class NoteController {
 
     @GetMapping("/{id}")
     public NoteDto getOne(@PathVariable String id){
-        NoteDto noteDto = noteService.getEncrypted(id);
+        NoteDto noteDto = noteService.getOne(id);
 
         linkEncryptedNoteAsSelf(noteDto);
 
@@ -143,7 +143,7 @@ public class NoteController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/{id}")
     public void delete(@PathVariable String id, @AuthenticationPrincipal UserDetails userDetails){
-        NoteDto note = noteService.getEncrypted(id);
+        NoteDto note = noteService.getOne(id);
 
         noteService.delete(note.getId(), userDetails.getUsername());
         folderService.removeFromAll(note);

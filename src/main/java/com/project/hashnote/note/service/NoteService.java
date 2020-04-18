@@ -9,7 +9,7 @@ import java.util.List;
 public interface NoteService {
     EncryptionResponse save(NoteRequest noteRequest, String username);
     List<NoteDto> getAllBy(String username);
-    NoteDto getEncrypted(String id);
+    NoteDto getOne(String id);
     NoteDto getDecrypted(String id, String secretKey);
     EncryptionResponse patch(NoteRequest noteRequest, String username, String id, String secretKey);
     void delete(String id, String username);

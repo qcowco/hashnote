@@ -83,7 +83,7 @@ public class FolderController {
     @PostMapping("/{folderId}/notes/{noteId}")
     public void saveToFolder(@PathVariable String folderId, @PathVariable String noteId,
                              @AuthenticationPrincipal UserDetails user) {
-        NoteDto noteDto = noteService.getEncrypted(noteId);
+        NoteDto noteDto = noteService.getOne(noteId);
         folderService.saveToFolder(noteDto, folderId, user.getUsername());
     }
 
