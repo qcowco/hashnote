@@ -3,7 +3,6 @@ package com.project.hashnote.note.mapper;
 import com.project.hashnote.note.document.Note;
 import com.project.hashnote.note.dto.NoteDto;
 import com.project.hashnote.note.dto.NoteRequest;
-import com.project.hashnote.note.dto.PatchRequest;
 import org.mapstruct.*;
 
 import java.util.List;
@@ -44,7 +43,7 @@ public interface NoteMapper {
     @IterableMapping(qualifiedByName = "toDto")
     List<NoteDto> noteToNoteDtoList(List<Note> notes);
 
-    void copyProperties(PatchRequest source, @MappingTarget NoteRequest target);
+    void copyProperties(NoteRequest source, @MappingTarget NoteRequest target);
 
     void copyNote(Note source, @MappingTarget Note target);
 
