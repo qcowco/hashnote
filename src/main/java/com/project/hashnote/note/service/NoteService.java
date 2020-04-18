@@ -11,6 +11,7 @@ public interface NoteService {
     List<NoteDto> getAllBy(String username);
     NoteDto getOne(String id);
     NoteDto getDecrypted(String id, String secretKey);
+    EncryptionResponse patch(NoteRequest noteRequest, String username, String id);
     EncryptionResponse patch(NoteRequest noteRequest, String username, String id, String secretKey);
     void delete(String id, String username);
     void delete(String id);

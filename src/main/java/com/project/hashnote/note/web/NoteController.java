@@ -133,6 +133,16 @@ public class NoteController {
         return Objects.nonNull(user);
     }
 
+    @PatchMapping("/{id}")
+    public EncryptionResponse patch(@RequestBody NoteRequest noteRequest, @AuthenticationPrincipal UserDetails user,
+                                    @PathVariable String id) {
+        EncryptionResponse response = noteService.patch(noteRequest, user.getUsername(), id);
+
+        addLinks(response);
+
+        return response;
+    }
+
     @PatchMapping("/{id}/keys/{secretKey}")
     public EncryptionResponse patch(@RequestBody NoteRequest noteRequest, @AuthenticationPrincipal UserDetails user,
                                     @PathVariable String id, @PathVariable String secretKey){

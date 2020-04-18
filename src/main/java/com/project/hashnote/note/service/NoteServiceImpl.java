@@ -9,6 +9,7 @@ import com.project.hashnote.note.dao.NoteRepository;
 import com.project.hashnote.note.document.Note;
 import com.project.hashnote.note.mapper.NoteMapper;
 import com.project.hashnote.exceptions.ResourceNotFoundException;
+import com.project.hashnote.security.exception.UnauthorizedAccessException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -40,6 +41,10 @@ public class NoteServiceImpl implements NoteService {
     private EncryptionResponse saveRequest(NoteRequest noteRequest, String username) {
         Note note = noteMapper.requestToNote(noteRequest, username);
 
+        return processRequest(noteRequest, note);
+    }
+
+    private EncryptionResponse processRequest(NoteRequest noteRequest, Note note) {
         EncryptionResponse encryptionResponse;
 
         if (noteRequest.hasMethod()){
@@ -126,25 +131,43 @@ public class NoteServiceImpl implements NoteService {
     }
 
     @Override
-    public EncryptionResponse patch(PatchRequest patchRequest, String username, String id, String secretKey) {
+    public EncryptionResponse patch(NoteRequest patchRequest, String username, String id) {
         Note note = tryGetNoteForUser(username, id);
 
-        NoteRequest noteRequest = getRequest(note, secretKey);
-        // TODO: 15.04.2020 split into methods, cleanup
-        // TODO: 15.04.2020 make reencryption optional
+        if (note.isEncrypted())
+            throw new UnauthorizedAccessException("This note requires a private key to be patched.");
+
+        NoteRequest noteRequest = noteMapper.noteToRequest(note);
+
         noteMapper.copyProperties(patchRequest, noteRequest);
 
-        EncryptionDetails patchDetails = noteEncrypter.encrypt(noteRequest);
+        if (!patchRequest.hasMethod())
+            noteRequest.setMethod(null);
 
-        Note patchedNote = noteMapper.requestToNote(noteRequest, username);
-        patchedNote.setId(note.getId());
-        encryptionMapper.applyEncryption(patchDetails, patchedNote);
-        Note persistedNote = noteRepository.save(patchedNote);
+        note.setKeyVisits(0);
 
-        return new EncryptionResponse(persistedNote.getId(), new String(patchDetails.getSecretKey()));
+        return processRequest(noteRequest, note);
     }
 
-    private NoteRequest getRequest(Note note, String secretKey) {
+    @Override
+    public EncryptionResponse patch(NoteRequest patchRequest, String username, String id, String secretKey) {
+        Note note = tryGetNoteForUser(username, id);
+
+        NoteRequest noteRequest = getDecryptedRequest(note, secretKey);
+
+        noteMapper.copyProperties(patchRequest, noteRequest);
+
+        if (!patchRequest.hasMethod()) {
+            noteRequest.setMethod(null);
+            note.setEncryptionDetails(null);
+        }
+
+        note.setKeyVisits(0);
+
+        return processRequest(noteRequest, note);
+    }
+
+    private NoteRequest getDecryptedRequest(Note note, String secretKey) {
         NoteRequest originalRequest = noteMapper.noteToRequest(note);
 
         byte[] message = noteEncrypter.decrypt(note, secretKey);
