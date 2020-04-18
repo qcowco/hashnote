@@ -3,9 +3,9 @@ package com.project.hashnote.note.document;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.Objects;
 
 @NoArgsConstructor
@@ -21,6 +21,10 @@ public @Data class Note {
     private LocalDateTime expiresAt;
     private int keyVisits;
     private int maxVisits;
+
+    public boolean isEncrypted() {
+        return StringUtils.hasText(encryptionDetails.getMethod());
+    }
 
     @Override
     public boolean equals(Object o) {
