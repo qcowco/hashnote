@@ -1,5 +1,6 @@
 package com.project.hashnote.note.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NonNull;
@@ -12,6 +13,7 @@ import org.springframework.util.StringUtils;
 public @Data class EncryptionResponse extends RepresentationModel<EncryptionResponse> {
     @NonNull
     private String noteId;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String secretKey;
 
     public boolean hasSecretKey() {
