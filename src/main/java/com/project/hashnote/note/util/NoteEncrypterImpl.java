@@ -45,10 +45,10 @@ public class NoteEncrypterImpl implements NoteEncrypter {
     private MessageEncrypter buildEncrypterFor(EncryptionCredentials encryptionCredentials){
         AlgorithmDetails algorithmDetails = tryGetAlgorithm(encryptionCredentials.getMethod());
 
-        builder.algorithmDetails(algorithmDetails);
-        builder.encryptionCredentials(encryptionCredentials);
-
-        return builder.build();
+        return builder
+                .algorithmDetails(algorithmDetails)
+                .encryptionCredentials(encryptionCredentials)
+                .build();
     }
 
     private AlgorithmDetails tryGetAlgorithm(String method) {
