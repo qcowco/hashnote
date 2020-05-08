@@ -23,7 +23,7 @@ public @Data class Note {
     private int maxVisits;
 
     public boolean isEncrypted() {
-        return StringUtils.hasText(encryptionDetails.getMethod());
+        return Objects.nonNull(encryptionDetails) && StringUtils.hasText(encryptionDetails.getMethod());
     }
 
     @Override
