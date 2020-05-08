@@ -106,7 +106,7 @@ public class NoteController {
     private void addLinks(EncryptionResponse response) {
         if (response.hasSecretKey())
             linkDecryptedNote(response);
-        linkEncryptedNote(response);
+        linkEncryptedNoteAsSelf(response);
     }
 
     private void linkDecryptedNote(EncryptionResponse response) {
@@ -117,11 +117,11 @@ public class NoteController {
         );
     }
 
-    private void linkEncryptedNote(EncryptionResponse response) {
+    private void linkEncryptedNoteAsSelf(EncryptionResponse response) {
         response.add(WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder
                 .methodOn(NoteController.class)
                 .getOne(response.getNoteId()))
-                .withRel("encrypted")
+                .withSelfRel()
         );
     }
 
