@@ -8,7 +8,6 @@ import com.project.hashnote.notefolder.service.FolderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -83,7 +82,7 @@ public class NoteController {
     }
 
     @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping
     public EncryptionResponse save(@Valid @RequestBody NoteRequest noteRequest, @AuthenticationPrincipal UserDetails user) {
         String username;
 
