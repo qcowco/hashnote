@@ -54,12 +54,10 @@ class NoteServiceImplTest {
     @Mock
     private EncryptionMapper encryptionMapper;
 
-    //given a note is being created
     @DisplayName("Given a note is being created")
     @Nested
     class NoteCreation {
 
-        //when encryption method parameter is given
         @DisplayName("When encrypted")
         @Nested
         class HasEncryption {
@@ -67,7 +65,7 @@ class NoteServiceImplTest {
             @DisplayName("Then response has: ID, KEY")
             @Test
             public void shouldReturnEncryptionResponseWithKey() {
-                //Give
+                //Given
                 NoteRequest noteRequest = new NoteRequest();
                 noteRequest.setMethod(METHOD);
 
@@ -99,7 +97,6 @@ class NoteServiceImplTest {
             }
         }
 
-        //when no method parameter is given
         @DisplayName("When not encrypted")
         @Nested
         class NoEncryption {
@@ -297,11 +294,27 @@ class NoteServiceImplTest {
 
     }
 
-    @DisplayName("Given user is patching a note")
+    @DisplayName("Given user is patching an unencrypted note")
     @Nested
     class NotePatching {
 
-        @DisplayName("When requested note is encrypted")
+        @DisplayName("When couldn't find note by this user with given id")
+        @Nested
+        class NotAuthor {
+
+            @DisplayName("Then throws ResourceNotFoundException")
+            @Test
+            public void shouldThrowResourceNotFoundException() {
+                //Given
+                when(noteRepository.findByAuthorAndId(USER, ID))
+                        .thenReturn(Optional.empty());
+
+                //When/Then
+                assertThrows(ResourceNotFoundException.class, () -> noteService.patch(new NoteRequest(), USER, ID));
+            }
+        }
+
+        @DisplayName("When requested note is actually encrypted")
         @Nested
         class NoteIsEncrypted {
 
@@ -322,21 +335,212 @@ class NoteServiceImplTest {
                 assertThrows(UnauthorizedAccessException.class, () -> noteService.patch(new NoteRequest(), USER, ID));
             }
         }
-//        class
+
+        @DisplayName("When patch contains encryption method")
+        @Nested
+        class EncryptingPatch {
+
+            @DisplayName("Then response has: ID, KEY")
+            @Test
+            public void shouldReturnEncryptionResultWithKey() {
+                //Given
+                Note note = new Note();
+                note.setId(ID);
+
+                NoteRequest patchRequest = new NoteRequest();
+                patchRequest.setMethod(METHOD);
+
+                NoteRequest noteRequest = new NoteRequest();
+                noteRequest.setMethod(METHOD);
+
+                EncryptionCredentials encryptionCredentials = new EncryptionCredentials();
+                encryptionCredentials.setSecretKey(KEY.getBytes());
+
+                when(noteRepository.findByAuthorAndId(USER, ID))
+                        .thenReturn(Optional.of(note));
+
+                when(noteMapper.noteToRequest(note))
+                        .thenReturn(noteRequest);
+
+                doNothing().when(noteMapper)
+                        .copyProperties(patchRequest, noteRequest);
+
+                when(noteEncrypter.encrypt(noteRequest))
+                        .thenReturn(encryptionCredentials);
+
+                doNothing().when(encryptionMapper)
+                        .applyEncryption(encryptionCredentials, note);
+
+                when(noteRepository.save(note))
+                        .thenReturn(note);
+
+                EncryptionResponse expectedResponse = new EncryptionResponse(ID, KEY);
+
+                //When
+                EncryptionResponse response = noteService.patch(patchRequest, USER, ID);
+
+                //Then
+                assertEquals(expectedResponse, response);
+            }
+        }
+
+
+        @DisplayName("When patch doesn't contain an encryption method")
+        @Nested
+        class NormalPatch {
+
+            @DisplayName("Then response has: ID")
+            @Test
+            public void shouldReturnEncryptionResultWithoutKey() {
+                //Given
+                Note note = new Note();
+                note.setId(ID);
+
+                NoteRequest patchRequest = new NoteRequest();
+
+                NoteRequest noteRequest = new NoteRequest();
+
+                when(noteRepository.findByAuthorAndId(USER, ID))
+                        .thenReturn(Optional.of(note));
+
+                when(noteMapper.noteToRequest(note))
+                        .thenReturn(noteRequest);
+
+                doNothing().when(noteMapper)
+                        .copyProperties(patchRequest, noteRequest);
+
+                when(noteRepository.save(note))
+                        .thenReturn(note);
+
+                EncryptionResponse expectedResponse = new EncryptionResponse(ID);
+
+                //When
+                EncryptionResponse response = noteService.patch(patchRequest, USER, ID);
+
+                //Then
+                assertEquals(expectedResponse, response);
+            }
+        }
+
     }
 
     @DisplayName("Given user is patching an encrypted note")
     @Nested
     class EncryptedNotePatching {
 
-//        class
+        @DisplayName("When couldn't find note by this user with given id")
+        @Nested
+        class NotAuthor {
+
+            @DisplayName("Then throws ResourceNotFoundException")
+            @Test
+            public void shouldThrowResourceNotFoundException() {
+                //Given
+                when(noteRepository.findByAuthorAndId(USER, ID))
+                        .thenReturn(Optional.empty());
+
+                //When/Then
+                assertThrows(ResourceNotFoundException.class, () -> noteService.patch(new NoteRequest(), USER, ID));
+            }
+        }
+
+        @DisplayName("When key is good and request has an encryption method")
+        @Nested
+        class EncryptingPatch {
+
+            @DisplayName("Then response has: ID, KEY")
+            @Test
+            public void shouldReturnEncryptionResultWithKey() {
+                //Given
+                Note note = new Note();
+                note.setId(ID);
+
+                NoteRequest patchRequest = new NoteRequest();
+                patchRequest.setMethod(METHOD);
+
+                NoteRequest noteRequest = new NoteRequest();
+                noteRequest.setMethod(METHOD);
+
+                EncryptionCredentials encryptionCredentials = new EncryptionCredentials();
+                encryptionCredentials.setSecretKey(KEY.getBytes());
+
+                when(noteRepository.findByAuthorAndId(USER, ID))
+                        .thenReturn(Optional.of(note));
+
+                when(noteMapper.noteToRequest(note))
+                        .thenReturn(noteRequest);
+
+                when(noteEncrypter.decrypt(note, KEY))
+                        .thenReturn(MESSAGE.getBytes());
+
+                doNothing().when(noteMapper)
+                        .copyProperties(patchRequest, noteRequest);
+
+                when(noteEncrypter.encrypt(noteRequest))
+                        .thenReturn(encryptionCredentials);
+
+                doNothing().when(encryptionMapper)
+                        .applyEncryption(encryptionCredentials, note);
+
+                when(noteRepository.save(note))
+                        .thenReturn(note);
+
+                EncryptionResponse expectedResponse = new EncryptionResponse(ID, KEY);
+
+                //When
+                EncryptionResponse response = noteService.patch(patchRequest, USER, ID, KEY);
+
+                //Then
+                assertEquals(expectedResponse, response);
+            }
+        }
+
+        @DisplayName("When key is good and request has no encryption method")
+        @Nested
+        class NormalPatch {
+
+            @DisplayName("Then response has: ID")
+            @Test
+            public void shouldThrowWrongKeyException() {
+                //Given
+                Note note = new Note();
+                note.setId(ID);
+
+                NoteRequest patchRequest = new NoteRequest();
+
+                NoteRequest noteRequest = new NoteRequest();
+
+                when(noteRepository.findByAuthorAndId(USER, ID))
+                        .thenReturn(Optional.of(note));
+
+                when(noteMapper.noteToRequest(note))
+                        .thenReturn(noteRequest);
+
+                when(noteEncrypter.decrypt(note, KEY))
+                        .thenReturn(MESSAGE.getBytes());
+
+                doNothing().when(noteMapper)
+                        .copyProperties(patchRequest, noteRequest);
+
+                when(noteRepository.save(note))
+                        .thenReturn(note);
+
+                EncryptionResponse expectedResponse = new EncryptionResponse(ID);
+
+                //When
+                EncryptionResponse response = noteService.patch(patchRequest, USER, ID, KEY);
+
+                //Then
+                assertEquals(expectedResponse, response);
+            }
+        }
     }
 
     @DisplayName("Given user is deleting a note")
     @Nested
     class UserNoteDeleting {
 
-        @DisplayName("When user isn't author")
+        @DisplayName("When couldn't find note by this user with given id")
         @Nested
         class NoteExists {
 
@@ -349,21 +553,6 @@ class NoteServiceImplTest {
                 assertThrows(ResourceNotFoundException.class, () -> noteService.delete(ID, USER));
             }
         }
-    }
 
-//    @DisplayName("Given a note is being deleted")
-//    @Nested
-//    class NoteDeleting {
-//
-//        @DisplayName("When note exists")
-//        @Nested
-//        class NoteExists {
-//
-//            @DisplayName("Then it's deleted")
-//            @Test
-//            public void shouldDeleteNote() {
-//
-//            }
-//        }
-//    }
+    }
 }
