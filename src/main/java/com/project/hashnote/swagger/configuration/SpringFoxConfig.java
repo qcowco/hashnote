@@ -1,8 +1,8 @@
 package com.project.hashnote.swagger.configuration;
 
-import com.google.common.collect.Lists;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.hateoas.client.LinkDiscoverer;
 import org.springframework.hateoas.client.LinkDiscoverers;
 import org.springframework.hateoas.mediatype.collectionjson.CollectionJsonLinkDiscoverer;
@@ -14,17 +14,19 @@ import springfox.documentation.service.AuthorizationScope;
 import springfox.documentation.service.SecurityReference;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spi.service.contexts.SecurityContext;
+import springfox.documentation.spring.data.rest.configuration.SpringDataRestConfiguration;
 import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger.web.SecurityConfiguration;
 import springfox.documentation.swagger.web.SecurityConfigurationBuilder;
-import springfox.documentation.swagger2.annotations.EnableSwagger2;
+import springfox.documentation.swagger2.annotations.EnableSwagger2WebMvc;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 @Configuration
-@EnableSwagger2
+@EnableSwagger2WebMvc
+@Import(SpringDataRestConfiguration.class)
 public class SpringFoxConfig {
     @Bean
     public Docket api() {
@@ -33,7 +35,7 @@ public class SpringFoxConfig {
                 .paths(path -> path.startsWith("/api/v1") || path.startsWith("/login") || path.startsWith("/register"))
                 .build()
                 .ignoredParameterTypes(AuthenticationPrincipal.class)
-                .securitySchemes(Lists.newArrayList(apiKey()))
+                .securitySchemes(Arrays.asList(apiKey()))
                 .securityContexts(Arrays.asList(securityContext()));
     }
 
