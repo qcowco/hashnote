@@ -35,7 +35,7 @@ public class FolderController {
 
         folderDtos.forEach(folderDto -> folderDto.getNotes().forEach(this::linkEncrypted));
 
-        return folderService.getFoldersBy(user.getUsername());
+        return folderDtos;
     }
 
     private void linkEncrypted(NoteDto noteDto) {
