@@ -6,7 +6,6 @@ import com.project.hashnote.note.web.NoteController;
 import com.project.hashnote.notefolder.dto.FolderDto;
 import com.project.hashnote.notefolder.dto.FolderRequest;
 import com.project.hashnote.notefolder.dto.FolderResponse;
-import com.project.hashnote.notefolder.dto.NoteRequest;
 import com.project.hashnote.notefolder.service.FolderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
@@ -51,9 +50,8 @@ public class FolderController {
     @PostMapping
     public FolderResponse saveFolder(@RequestBody FolderRequest folderRequest,
                                      @AuthenticationPrincipal UserDetails user) {
-        String folderId = folderService.save(folderRequest, user.getUsername());
+        FolderResponse folderResponse = folderService.save(folderRequest, user.getUsername());
 
-        FolderResponse folderResponse = new FolderResponse(folderId);
         linkFolders(folderResponse, user);
 
         return folderResponse;

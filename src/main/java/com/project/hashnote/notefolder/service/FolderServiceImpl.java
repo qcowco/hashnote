@@ -6,6 +6,7 @@ import com.project.hashnote.notefolder.dao.FolderRepository;
 import com.project.hashnote.notefolder.document.Folder;
 import com.project.hashnote.notefolder.dto.FolderDto;
 import com.project.hashnote.notefolder.dto.FolderRequest;
+import com.project.hashnote.notefolder.dto.FolderResponse;
 import com.project.hashnote.notefolder.mapper.FolderMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -24,10 +25,12 @@ public class FolderServiceImpl implements FolderService {
     }
 
     @Override
-    public String save(FolderRequest folderRequest, String author) {
+    public FolderResponse save(FolderRequest folderRequest, String author) {
         Folder folder = folderMapper.requestToFolder(folderRequest, author, new LinkedList<NoteDto>());
 
-        return folderRepository.save(folder).getId();
+        String id = folderRepository.save(folder).getId();
+
+        return new FolderResponse(id);
     }
 
     @Override
@@ -86,7 +89,6 @@ public class FolderServiceImpl implements FolderService {
 
         NoteDto noteDto = notes.stream().filter(note -> noteId.equals(note.getId())).findFirst()
                 .orElseThrow(() -> new ResourceNotFoundException("Note doesn't exist in this folder"));
-
 
         notes.remove(noteDto);
 
