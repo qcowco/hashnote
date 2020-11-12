@@ -119,7 +119,7 @@ class FolderServiceImplTest {
             public void shouldThrowResourceNotFoundException() {
                 //Given
                 Folder folder = new Folder();
-                folder.setId("some id");
+                folder.setId(WRONG_ID);
 
                 List<Folder> folders = Arrays.asList(folder);
 

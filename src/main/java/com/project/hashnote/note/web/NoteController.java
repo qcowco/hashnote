@@ -20,6 +20,8 @@ import java.util.Objects;
 @RequestMapping("/api/v1/notes")
 @CrossOrigin
 public class NoteController {
+    private final int NOTE_TIME_LIMIT = 2880;
+
     private NoteService noteService;
     private FolderService folderService;
 
@@ -92,7 +94,7 @@ public class NoteController {
             username = "anon";
 
             if (exceedsFreeTimeLimit(noteRequest))
-                noteRequest.setMinutesLeft(2880);
+                noteRequest.setMinutesLeft(NOTE_TIME_LIMIT);
         }
 
         EncryptionResponse response = noteService.save(noteRequest, username);
@@ -125,7 +127,7 @@ public class NoteController {
     }
 
     private boolean exceedsFreeTimeLimit(@RequestBody @Valid NoteRequest noteRequest) {
-        return noteRequest.getMinutesLeft() == 0 || noteRequest.getMinutesLeft() > 2880;
+        return noteRequest.getMinutesLeft() == 0 || noteRequest.getMinutesLeft() > NOTE_TIME_LIMIT;
     }
 
     private boolean isUserLogged(UserDetails user) {

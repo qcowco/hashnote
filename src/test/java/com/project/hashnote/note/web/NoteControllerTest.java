@@ -48,8 +48,8 @@ class NoteControllerTest {
     private final String NOTE_KEY = "KEY";
 
     private final String BASE_URL = "/api/v1/notes";
-    private final String DECRYPTED_NOTE_URL = BASE_URL + '/' + NOTE_ID + "/keys/" + NOTE_KEY;
     private final String NOTE_URL = BASE_URL + '/' + NOTE_ID;
+    private final String DECRYPTED_NOTE_URL = NOTE_URL + "/keys/" + NOTE_KEY;
 
     @Autowired
     private ObjectMapper objectMapper;
