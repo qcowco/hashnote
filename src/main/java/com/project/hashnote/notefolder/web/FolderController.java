@@ -14,6 +14,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @CrossOrigin
@@ -48,7 +49,7 @@ public class FolderController {
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
-    public FolderResponse saveFolder(@RequestBody FolderRequest folderRequest,
+    public FolderResponse saveFolder(@Valid @RequestBody FolderRequest folderRequest,
                                      @AuthenticationPrincipal UserDetails user) {
         FolderResponse folderResponse = folderService.save(folderRequest, user.getUsername());
 
@@ -73,7 +74,7 @@ public class FolderController {
     }
 
     @PatchMapping("/{folderId}")
-    public void patchFolder(@PathVariable String folderId, @RequestBody FolderRequest folderRequest,
+    public void patchFolder(@PathVariable String folderId, @Valid @RequestBody FolderRequest folderRequest,
                             @AuthenticationPrincipal UserDetails user) {
         folderService.patch(folderId, folderRequest.getName(), user.getUsername());
     }
