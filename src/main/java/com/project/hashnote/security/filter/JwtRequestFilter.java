@@ -37,7 +37,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         if (isBearerToken(token)) {
             token = token.replace(PREFIX, "");
 
-            String username = jwtTokenUtil.gerUsernameFromToken(token);
+            String username = jwtTokenUtil.getUsernameFromToken(token);
 
             UserDetails principal = userDetailsService.loadUserByUsername(username);
 

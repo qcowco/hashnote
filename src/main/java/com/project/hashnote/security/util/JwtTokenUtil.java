@@ -16,7 +16,7 @@ public class JwtTokenUtil {
     @Value("${jwt.secret}")
     private String base64Secret;
 
-    public String gerUsernameFromToken(String token) {
+    public String getUsernameFromToken(String token) {
         return getClaimFromToken(token, Claims::getSubject);
     }
 
