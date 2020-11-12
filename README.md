@@ -5,6 +5,7 @@ Hashnote is an application that serves as a backend for message encryption. Its 
 ## Table of contents
 * [Technologies](#technologies)
 * [Encryption](#encryption)
+* [Security](#security)
 * [Database](#database)
 * [Setup](#setup)
 * [API Documentation](#api-documentation)
