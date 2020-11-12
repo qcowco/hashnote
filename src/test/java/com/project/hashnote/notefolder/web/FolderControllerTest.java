@@ -11,18 +11,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.hateoas.HypermediaAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.hateoas.Link;
-import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultMatcher;
@@ -31,7 +26,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
@@ -112,7 +106,6 @@ class FolderControllerTest {
 
     @DisplayName("Given a folder is being created")
     @Nested
-    @WithMockUser(username = USERNAME)
     class CreateFolder {
         private FolderRequest folderRequest;
         private FolderResponse folderResponse;
@@ -129,30 +122,56 @@ class FolderControllerTest {
                     .thenReturn(folderResponse);
         }
 
-        @DisplayName("Then returns Http status Created")
-        @Test
-        public void shouldReturnHttpStatusCreated() throws Exception {
-            //When/Then
-            mockMvc.perform(
-                    post(BASE_URL)
-                            .with(csrf())
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsBytes(folderRequest)))
-                    .andDo(print())
-                    .andExpect(status().isCreated());
+        @DisplayName("When request is valid")
+        @Nested
+        @WithMockUser(username = USERNAME)
+        class ValidRequest {
+
+            @DisplayName("Then returns Http status Created")
+            @Test
+            public void shouldReturnHttpStatusCreated() throws Exception {
+                //When/Then
+                mockMvc.perform(
+                        post(BASE_URL)
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsBytes(folderRequest)))
+                        .andDo(print())
+                        .andExpect(status().isCreated());
+            }
+
+            @DisplayName("Then returns new folder ID")
+            @Test
+            public void shouldReturnNewFolderId() throws Exception {
+                //When/Then
+                mockMvc.perform(
+                        post(BASE_URL)
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsBytes(folderRequest)))
+                        .andDo(print())
+                        .andExpect(content().json(objectMapper.writeValueAsString(folderResponse)));
+            }
         }
 
-        @DisplayName("Then returns new folder ID")
-        @Test
-        public void shouldReturnNewFolderId() throws Exception {
-            //When/Then
-            mockMvc.perform(
-                    post(BASE_URL)
-                            .with(csrf())
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsBytes(folderRequest)))
-                    .andDo(print())
-                    .andExpect(content().json(objectMapper.writeValueAsString(folderResponse)));
+        @DisplayName("When request fails validation check")
+        @Nested
+        @WithMockUser(username = USERNAME)
+        class InvalidRequest {
+            private FolderRequest emptyRequest = new FolderRequest();
+
+            @DisplayName("Then throws Http status Bad Request")
+            @Test
+            public void shouldReturnHttpStatusBadRequest() throws Exception {
+                //When/Then
+                mockMvc.perform(
+                        post(BASE_URL)
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsBytes(emptyRequest)))
+                        .andDo(print())
+                        .andExpect(status().isBadRequest());
+            }
         }
     }
 
@@ -184,7 +203,6 @@ class FolderControllerTest {
 
     @DisplayName("Given a folder is being patched")
     @Nested
-    @WithMockUser(username = USERNAME)
     class PatchFolder {
         private FolderRequest folderRequest;
 
@@ -194,31 +212,58 @@ class FolderControllerTest {
             folderRequest.setName(FOLDER_NAME);
         }
 
-        @DisplayName("Then returns Http status Ok")
-        @Test
-        public void shouldReturnHttpStatusOk() throws Exception {
-            //When/Then
-            mockMvc.perform(
-                    patch(FOLDER_URL)
-                            .with(csrf())
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(folderRequest)))
-                    .andDo(print())
-                    .andExpect(status().isOk());
+        @DisplayName("When request is valid")
+        @Nested
+        @WithMockUser(username = USERNAME)
+        class ValidRequest {
+
+            @DisplayName("Then returns Http status Ok")
+            @Test
+            public void shouldReturnHttpStatusOk() throws Exception {
+                //When/Then
+                mockMvc.perform(
+                        patch(FOLDER_URL)
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(folderRequest)))
+                        .andDo(print())
+                        .andExpect(status().isOk());
+            }
+
+            @DisplayName("Then returns empty body")
+            @Test
+            public void shouldReturnEmptyBody() throws Exception {
+                //When/Then
+                mockMvc.perform(
+                        patch(FOLDER_URL)
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(folderRequest)))
+                        .andDo(print())
+                        .andExpect(isEmpty());
+            }
         }
 
-        @DisplayName("Then returns empty body")
-        @Test
-        public void shouldReturnEmptyBody() throws Exception {
-            //When/Then
-            mockMvc.perform(
-                    patch(FOLDER_URL)
-                            .with(csrf())
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(folderRequest)))
-                    .andDo(print())
-                    .andExpect(isEmpty());
+        @DisplayName("When request fails validation check")
+        @Nested
+        @WithMockUser(username = USERNAME)
+        class InvalidRequest {
+
+            @DisplayName("Then returns Http status Bad Request")
+            @Test
+            public void shouldReturnHttpStatusOk() throws Exception {
+                //When/Then
+                mockMvc.perform(
+                        patch(FOLDER_URL)
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(new FolderRequest())))
+                        .andDo(print())
+                        .andExpect(status().isBadRequest());
+            }
         }
+
+
     }
 
     @DisplayName("Given a note is being added to a folder")
