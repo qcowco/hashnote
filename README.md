@@ -20,7 +20,7 @@ Hashnote is an application that serves as a backend for message encryption. Its 
 * HATEOAS
 
 ## Encryption
-The notes are encrypted with a private symmetric key that grants anyone access to it's contents. Encryption is achieved thanks to the javax.crypto package, which also allows seamless integration with projects such as Bouncy Castle. Additionally, the architecture is designed in such a way that makes expansion of supported algorithms very easy. Declare a component that extends the abstract AlgorithmDetails class, and it will be automatically picked up and integrated.
+The notes are encrypted with a private symmetric key that grants anyone access to its contents. Encryption is achieved thanks to the javax.crypto package, which also allows for seamless integration with projects such as Bouncy Castle. Additionally, the architecture is designed in such a way that makes expansion of supported algorithms very easy. Declare a component that extends the abstract AlgorithmDetails class, and it will be automatically picked up and integrated.
 
 ## Security
 Bearer tokens are used to authenticate and authorize the user if needed.
