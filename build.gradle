@@ -36,10 +36,8 @@ dependencies {
     compile group: 'io.jsonwebtoken', name: 'jjwt', version: '0.9.1'
     compile group: 'javax.xml.bind', name: 'jaxb-api', version: '2.4.0-b180830.0359'
 
-    compile group: 'io.springfox', name: 'springfox-swagger2', version: '3.0.0-SNAPSHOT'
-    compile group: 'io.springfox', name: 'springfox-swagger-ui', version: '3.0.0-SNAPSHOT'
-    compile group: 'io.springfox', name: 'springfox-data-rest', version: '3.0.0-SNAPSHOT'
-
+    compile 'io.springfox:springfox-boot-starter:3.0.0'
+    
     testCompile group: "de.flapdoodle.embed", name: "de.flapdoodle.embed.mongo"
 
     testImplementation('org.springframework.boot:spring-boot-starter-test') {
