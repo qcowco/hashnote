@@ -3,10 +3,10 @@ package com.project.hashnote.note.util;
 import com.project.hashnote.note.dto.EncryptionCredentials;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import static org.apache.tomcat.util.codec.binary.Base64.encodeBase64;
-import static org.apache.tomcat.util.codec.binary.Base64.decodeBase64;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -29,18 +29,24 @@ class Base64EncoderTest {
         credentials.setMethod(METHOD);
     }
 
-    @DisplayName("Returns doubly base64 encoded EncryptionCredentials")
-    @Test
-    void shouldReturnEncodedEncryptionDetails() {
-        //Given
-        EncryptionCredentials encodedCredentials = encode(credentials);
+    @DisplayName("Given EncryptionCredentials are being encoded")
+    @Nested
+    class EncodingCredetials {
 
-        //When
-        EncryptionCredentials response = base64Encoder.encode(credentials);
+        @DisplayName("Then eturns doubly base64-encoded EncryptionCredentials")
+        @Test
+        void shouldReturnEncodedEncryptionDetails() {
+            //Given
+            EncryptionCredentials encodedCredentials = encode(credentials);
 
-        //Then
-        assertEquals(encodedCredentials, response);
+            //When
+            EncryptionCredentials response = base64Encoder.encode(credentials);
+
+            //Then
+            assertEquals(encodedCredentials, response);
+        }
     }
+
 
     private EncryptionCredentials encode(EncryptionCredentials credentials) {
         EncryptionCredentials encodedCredentials = new EncryptionCredentials();
@@ -53,28 +59,22 @@ class Base64EncoderTest {
         return encodedCredentials;
     }
 
-    @DisplayName("Returns doubly base64 decoded EncryptionCredentials")
-    @Test
-    void shouldReturnDecodedEncryptionDetails() {
-        //Given
-        EncryptionCredentials encodedCredentials = encode(credentials);
+    @DisplayName("Given EncryptionDetails are being decoded")
+    @Nested
+    class DecodingCredentials {
 
-        //When
-        EncryptionCredentials response = base64Encoder.decode(encodedCredentials);
+        @DisplayName("Then returns doubly base64-decoded EncryptionCredentials")
+        @Test
+        void shouldReturnDecodedEncryptionDetails() {
+            //Given
+            EncryptionCredentials encodedCredentials = encode(credentials);
 
-        //Then
-        assertEquals(credentials, response);
-    }
+            //When
+            EncryptionCredentials response = base64Encoder.decode(encodedCredentials);
 
-    private EncryptionCredentials decode(EncryptionCredentials credentials) {
-        EncryptionCredentials encodedCredentials = new EncryptionCredentials();
-
-        encodedCredentials.setMessage(decodeBase64(decodeBase64(credentials.getMessage())));
-        encodedCredentials.setSecretKey(decodeBase64(decodeBase64(credentials.getSecretKey())));
-        encodedCredentials.setVector(decodeBase64(decodeBase64(credentials.getVector())));
-        encodedCredentials.setMethod(credentials.getMethod());
-
-        return encodedCredentials;
+            //Then
+            assertEquals(credentials, response);
+        }
     }
 
 }
